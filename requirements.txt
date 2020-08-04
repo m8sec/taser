@@ -1,0 +1,6 @@
+bs4
+requests
+requests[socks]
+requests_ntlm
+tldextract
+dnspython
