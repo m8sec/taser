@@ -9,7 +9,7 @@
 import argparse
 from sys import exit
 from ipparser import ipparser
-from taser.logx.printx import bullet, colored
+from taser.printx import bullet, colored
 from taser.proto.dns import dns_lookup, reverse_lookup
 
 DNS_TYPES = ['A','NS','MX','TXT','CNAME','HINFO','PTR','SOA','SPF','SRV','RP']

@@ -1,5 +1,5 @@
 import threading
-from taser import logx
+from taser import printx
 from taser.utils import TaserTimeout
 from taser.proto.http import web_request, extract_links, extract_webdomain, extract_subdomain
 
@@ -66,7 +66,7 @@ class WebSearch(threading.Thread):
         '''
         if url not in self.links:
             self.links.append(url)
-            logx.bullet(url, bullet='[{}-RESULT] '.format(search_engine.upper()), bullet_fg='green')
+            printx.bullet(url, bullet='[{}-RESULT] '.format(search_engine.upper()), bullet_fg='green')
 
     def outputHandler(self, url, search_engine, search_query):
         '''

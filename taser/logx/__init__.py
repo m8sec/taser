@@ -3,7 +3,7 @@ import logging
 from taser.logx.cliadapter import TaserAdapter
 from taser.logx.dbhandler import DBHandler, DBAdapter
 
-def setup_consoleLogger(log_level=logging.INFO, logger_name='taser_cli', adapter=TaserAdapter, spacers=[]):
+def setup_consoleLogger(log_level=logging.INFO, logger_name='taser_cli', spacers=[]):
     formatter = logging.Formatter('%(message)s')
     StreamHandler = logging.StreamHandler(sys.stdout)
     StreamHandler.setFormatter(formatter)
@@ -11,7 +11,7 @@ def setup_consoleLogger(log_level=logging.INFO, logger_name='taser_cli', adapter
     logger.propagate = False
     logger.addHandler(StreamHandler)
     logger.setLevel(log_level)
-    return adapter(logger_name, spacers)
+    return TaserAdapter(logger_name, spacers)
 
 def setup_fileLogger(filename, mode='a', log_level=logging.INFO, logger_name='taser_file'):
     '''Create standard logger for file output'''

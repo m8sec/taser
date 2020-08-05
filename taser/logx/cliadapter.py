@@ -1,9 +1,9 @@
 import os
 import logging
-from taser.logx.printx import code_gen, highlight
+from taser.printx import code_gen, highlight
 
 class TaserAdapter(logging.LoggerAdapter):
-    def __init__(self, logger_name='taser_cli', spacers=[50,30,15,15,15]):
+    def __init__(self, logger_name='taser_cli', spacers=[]):
         self.logger = logging.getLogger(logger_name)
         self.setFormat(spacers)
         self.windows = False

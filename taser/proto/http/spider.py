@@ -1,5 +1,5 @@
 import threading
-from taser import logx
+from taser import printx
 from urllib.parse import urlparse
 from taser.utils import TaserTimeout
 from urllib3 import disable_warnings, exceptions
@@ -87,12 +87,12 @@ class Spider(threading.Thread):
         subdomain = extract_subdomain(url).lower()
 
         if url.startswith('mailto'):
-            logx.bullet('{} => {}'.format(src_url, url), bullet='[EMAIL] ', bullet_fg='green')
+            printx.bullet('{} => {}'.format(src_url, url), bullet='[EMAIL] ', bullet_fg='green')
 
         elif self.base_domain in subdomain:
             if self.base_subdomain != subdomain:
-                logx.bullet('{} => {}'.format(src_url, url), bullet='[SUBDOMAIN] ', bullet_fg='red')
+                printx.bullet('{} => {}'.format(src_url, url), bullet='[SUBDOMAIN] ', bullet_fg='red')
             else:
-                logx.bullet('{} => {}'.format(src_url, url), bullet='[URL] ', bullet_fg='blue')
+                printx.bullet('{} => {}'.format(src_url, url), bullet='[URL] ', bullet_fg='blue')
         else:
-            logx.bullet('{} => {}'.format(src_url, url), bullet='[EXTERNAL-URL] ', bullet_fg='purple')
+            printx.bullet('{} => {}'.format(src_url, url), bullet='[EXTERNAL-URL] ', bullet_fg='purple')

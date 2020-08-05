@@ -1,6 +1,6 @@
 import asyncio
 import concurrent.futures
-from taser import logx
+from taser import printx
 from taser.proto.http import WebSession
 
 class AsyncHTTP():
@@ -16,7 +16,7 @@ class AsyncHTTP():
         return self.session.get_request(url, timeout=12, proxies=[])
 
     def response_handler(self, resp):
-        logx.bullet("{} => {}".format(resp.request.url, resp.get_statuscode(resp)))
+        printx.bullet("{} => {}".format(resp.request.url, resp.get_statuscode(resp)))
 
     async def execution(self, urls, max_workers=50):
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
