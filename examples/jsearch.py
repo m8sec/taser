@@ -27,8 +27,9 @@ from taser.logx import setup_fileLogger, setup_consoleLogger
 from taser.proto.http import extract_webdomain, extract_subdomain, extract_links, ipcheck, internal_ipcheck
 
 class JSearch(Spider):
-    def __init__(self, url, depth, timeout, conn_timeout, proxies):
+    def __init__(self, url, depth, timeout, conn_timeout, proxies, debug=True):
         Spider.__init__(self, url, depth, timeout, conn_timeout, proxies)
+        self.debug = debug
         self.subdomains = [extract_subdomain(url)]
         self.emails = []
         self.blacklist = ['google', 'cloudflare', 'modernizer', 'jquery', 'bootstrap']

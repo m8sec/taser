@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='taser',
-    version='0.1.0',
+    version='0.1.1',
     author = 'm8r0wn',
     author_email = 'm8r0wn@protonmail.com',
     description = 'Security testing resource library',
@@ -18,7 +18,7 @@ setup(
         "taser", "taser.*"
     ]),
     package_data={
-        '': ['resources/*']
+        '': ['*']
     },
     install_requires=[
         'bs4',

@@ -1,19 +1,16 @@
 import re
 import requests
-from os import path
 from random import choice
 from bs4 import BeautifulSoup
 from tldextract import extract
 from urllib.parse import urlparse
 from requests_ntlm import HttpNtlmAuth
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from taser.resources.user_agents import USERAGENTS
 from urllib3 import disable_warnings, exceptions
+from requests.packages.urllib3.util.retry import Retry
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 disable_warnings(exceptions.InsecureRequestWarning)
-
-if 'USERAGENTS' not in globals():
-    USERAGENTS = [line.strip() for line in open(path.join(path.dirname(path.realpath(__file__)),'..','..','resources','user_agents.txt'))]
 
 class WebSession():
     '''Create web session to save and establish state'''
@@ -99,6 +96,10 @@ def web_request(url, method='GET', headers={}, timeout=4, proxies=[], redirects=
     finally:
         ses.close()
 
+def download_file(source, output):
+    f = open(output, 'wb+')
+    f.write(web_request(source, timeout=5).content)
+    f.close()
 
 #################################
 # HTTP request support functions
@@ -139,15 +140,17 @@ def extract_header(header_field, resp):
 def extract_links(resp, mailto=False, source={'a':'href', 'script':'src', 'link':'href'}):
     links = []
     soup = BeautifulSoup(resp.content, 'lxml')
-    for tag in source:
+    for tag in source.keys():
         for link in soup.findAll(tag):
             link = str(link.get(source[tag]))
             if link.startswith("/"):
-                links.append(rm_slash(resp.request.url) + link)
+                links.append(rm_slash(resp.url) + link)
             elif mailto and link.startswith('mailto:'):
                 links.append(link)
             elif "://" in link:
                 links.append(link)
+            else:
+                links.append(resp.url+link)
     return list(set(links))
 
 def get_pagetitle(resp):
