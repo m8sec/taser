@@ -1,2 +1,7 @@
-[0.1.0] - 2020-08-04
+[0.1.1dev] - 2020-08
+- Fixed timeout options in example scripts
+- Added ability to execute raw HTTP request strings + support functions
+- Removed user_agents.txt and created user_agents.py for ease of use/import (esp in virtualenv's)
+
+[0.1.0] - 2020-08
 - Initial Commit

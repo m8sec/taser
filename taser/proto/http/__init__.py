@@ -101,6 +101,36 @@ def download_file(source, output):
     f.write(web_request(source, timeout=5).content)
     f.close()
 
+def exec_rawRequest(raw_data, scheme='https://', debug=False):
+    '''Takes in a raw HTTP request formatted as a string,
+    converts into web_request format, and returns the response'''
+    try:
+        req = parse_rawRequest(raw_data, scheme)
+    except Exception as e:
+        if debug: print('Error parsing raw request: {}'.format(str(e)))
+        return False
+    return web_request(req['url'], method=req['method'], headers=req['headers'], data=req['data'])
+
+def parse_rawRequest(raw_data, scheme):
+    tmp = {'headers':{}, 'data':''''''}
+    lines = raw_data.splitlines()
+    tmp['method'],tmp['page'],tmp['version'] = lines[0].strip().split(' ')
+    for line in lines[1:]:
+        if line:
+            head, val = line.strip().split(': ')
+            tmp['headers'][head] = val
+
+            if head == 'Host':
+                tmp['url'] = scheme + rm_slash(val) + tmp['page']
+        else:
+            # Everything after first blank line will be considered data
+            for x in range(lines.index(line), lines.index(lines[-1])+1):
+                if lines[x]:
+                    tmp['data'] += lines[x]
+            return tmp
+    return tmp
+
+
 #################################
 # HTTP request support functions
 #################################

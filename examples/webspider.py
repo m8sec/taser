@@ -52,7 +52,7 @@ def spider(url, depth=2, timeout=30, conn_timeout=3, proxies=[]):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
-    args.add_argument('-t', dest='timeout', type=int, default=30, help='Spider timeout (Default: 30)')
+    args.add_argument('-t', dest='timeout', type=int, default=30, help='Spider timeout, 0=None (Default: 30)')
     args.add_argument('-tc', dest='conn_timeout', type=int, default=3, help='Connection timeout')
     args.add_argument('-d', dest='depth', type=int, default=2, help='Spider depth (Default: 2)')
     args.add_argument('-o', dest='outfile', action='store', help='Output to filename to log results')

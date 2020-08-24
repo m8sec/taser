@@ -27,7 +27,7 @@ from taser.logx import setup_fileLogger, setup_consoleLogger
 from taser.proto.http import extract_webdomain, extract_subdomain, extract_links, ipcheck, internal_ipcheck
 
 class JSearch(Spider):
-    def __init__(self, url, depth, timeout, conn_timeout, proxies, debug=True):
+    def __init__(self, url, depth, timeout, conn_timeout, proxies, debug=False):
         Spider.__init__(self, url, depth, timeout, conn_timeout, proxies)
         self.debug = debug
         self.subdomains = [extract_subdomain(url)]
@@ -138,9 +138,7 @@ def jsearch(url, depth=2, timeout=30, conn_timeout=3, proxies=[]):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser()
-    timeout = args.add_mutually_exclusive_group(required=False)
-    timeout.add_argument('-t', dest='timeout', type=int, default=30, help='Spider timeout (Default: 30)')
-    timeout.add_argument('--no-timeout', dest='timeout', action='store_true', help='Run until max depth reached')
+    args.add_argument('-t', dest='timeout', type=int, default=30, help='Spider timeout, 0=None (Default: 30)')
     args.add_argument('-tc', dest='conn_timeout', type=int, default=3, help='Connection timeout')
     args.add_argument('-d', dest='depth', type=int, default=2, help='Spider depth (Default: 2)')
     args.add_argument('-o', dest='outfile', action='store', help='Output to filename to log results')
