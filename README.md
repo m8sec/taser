@@ -41,5 +41,4 @@ Find the latest documentation on the [project Wiki](https://github.com/m8r0wn/ta
 
 ## @ToDo
 * Documentation
-* Improve experimental features
-* Create more Hacking Tools!
+* Hack the Planet!

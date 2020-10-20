@@ -1,5 +1,6 @@
 # Library to Check Common Web Vulns (Experimental)
-from taser.proto.http import *
+from random import choice
+from taser.proto.http import web_request, USERAGENTS, extract_header
 
 def webdav_check(url):
     try:
@@ -24,7 +25,7 @@ def cors_check(url, test_addr='example123abc.com', timeout=5, proxies=[]):
               'Origin'    : test_addr
              }
     try:
-        resp = web_request(url, header, timeout=5, proxies=[])
+        resp = web_request(url, header, timeout=timeout, proxies=proxies)
         cors = extract_header('Access-Control-Allow-Origin', resp)
         if cors in [test_addr, '*']:
             data['Access-Control-Allow-Origin'] = cors

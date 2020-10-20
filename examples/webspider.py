@@ -7,11 +7,14 @@
 
 import argparse
 import threading
+from sys import argv
 from os import _exit
 from time import sleep
+
+from taser.version import BANNER
 from taser.utils import file_exists
-from taser.proto.http import extract_subdomain
 from taser.proto.http.spider import Spider
+from taser.proto.http import extract_subdomain
 from taser.logx import setup_fileLogger, setup_consoleLogger
 
 class TaserSpider(Spider):
@@ -51,7 +54,7 @@ def spider(url, depth=2, timeout=30, conn_timeout=3, proxies=[]):
     return
 
 if __name__ == '__main__':
-    args = argparse.ArgumentParser()
+    args = argparse.ArgumentParser(description="\t\t{0}".format(argv[0]), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
     args.add_argument('-t', dest='timeout', type=int, default=30, help='Spider timeout, 0=None (Default: 30)')
     args.add_argument('-tc', dest='conn_timeout', type=int, default=3, help='Connection timeout')
     args.add_argument('-d', dest='depth', type=int, default=2, help='Spider depth (Default: 2)')
@@ -65,6 +68,7 @@ if __name__ == '__main__':
     cliLogger = setup_consoleLogger(spacers=[30])
     fileLogger = setup_fileLogger(args.outfile, mode='w')
     fileLogger.info('''Detection,Source,URL''')
+    cliLogger.info(BANNER)
 
     if not args.target[0].startswith(('http://', 'https://')):
         args.target[0] = 'https://'+args.target[0]

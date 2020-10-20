@@ -12,8 +12,8 @@ class AsyncHTTP():
     def __init__(self, timeout):
         self.timeout = timeout
 
-    def request_handler(self, url):
-        return self.session.get_request(url, timeout=12, proxies=[])
+    def request_handler(self, url, timeout=3, proxies=[]):
+        return self.session.web_request(url, timeout=timeout, proxies=proxies)
 
     def response_handler(self, resp):
         printx.bullet("{} => {}".format(resp.request.url, resp.get_statuscode(resp)))

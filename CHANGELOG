@@ -1,3 +1,8 @@
+[0.2.0] - 2020-10
+- Added smtp, tcp, & ftp protocols
+- Fix retry issue in web_request method
+- Add additional support functions and example scripts
+
 [0.1.1dev] - 2020-08
 - Fixed timeout options in example scripts
 - Added ability to execute raw HTTP request strings + support functions

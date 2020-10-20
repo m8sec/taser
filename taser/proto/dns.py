@@ -1,3 +1,4 @@
+import socket
 import dns.resolver
 import dns.reversename
 
@@ -20,9 +21,15 @@ def dns_lookup(host, dns_lookup, dns_srv=['1.1.1.1','8.8.8.8']):
         pass
     return results
 
-def reverse_lookup(host):
+def reverse_lookup(host, dns_srv=['1.1.1.1','8.8.8.8']):
     try:
         addr = dns.reversename.from_address(host)
-        return dns_lookup(addr, "PTR")
+        return dns_lookup(addr, "PTR", dns_srv=dns_srv)
     except:
         return []
+
+def get_ip(host):
+    try:
+        return socket.gethostbyname(host)
+    except:
+        return host

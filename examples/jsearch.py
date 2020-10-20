@@ -17,14 +17,17 @@
 import re
 import argparse
 import threading
+from sys import argv
 from os import _exit
 from time import sleep
 from bs4 import BeautifulSoup
 from ipparser import ipparser
+
+from taser.version import BANNER
 from taser.utils import file_exists
 from taser.proto.http.spider import Spider
 from taser.logx import setup_fileLogger, setup_consoleLogger
-from taser.proto.http import extract_webdomain, extract_subdomain, extract_links, ipcheck, internal_ipcheck
+from taser.proto.http import extract_webdomain, extract_subdomain, extract_links, ipcheck
 
 class JSearch(Spider):
     def __init__(self, url, depth, timeout, conn_timeout, proxies, debug=False):
@@ -83,7 +86,8 @@ class JSearch(Spider):
 
         elif resp.headers['Content-Type'].startswith('text/html'):
             for url in extract_links(resp, mailto=True, source={'a':'href', 'script':'src', 'link':'href'}):
-                self.linkHandler(url, resp.request.url, next_depth)
+                self.linkHandler(url.strip(), resp.request.url, next_depth)
+                self.outputHandler(url.strip(), resp.request.url)
             soup = BeautifulSoup(resp.content, "lxml")
             js_tags = soup.findAll("script")
             for js in js_tags:
@@ -108,6 +112,13 @@ class JSearch(Spider):
             cliLogger.success('{} => {}'.format(src_url, link), bullet='[HTML-IP] ', fg='blue')
             fileLogger.info('''HTML-IP,{},{}'''.format(src_url, link))
 
+        elif args.spider:
+            if self.base_domain in subdomain:
+                cliLogger.info('{} => {}'.format(src_url, link), bullet='[HTML-SPIDER] ')
+            else:
+                cliLogger.success([src_url, ' => ', link], bullet='[HTML-EXTERNAL] ', fg='purple')
+            fileLogger.info('''HTML-SPIDER,{},{}'''.format(src_url, link))
+
     def js_parser(self, text, url):
         if any(x in url for x in self.blacklist):
             return
@@ -125,8 +136,8 @@ class JSearch(Spider):
             except Exception as e:
                 cliLogger.warning(str(e), bullet='[JS-REGEX-ERROR] ', fg='red')
 
-def jsearch(url, depth=2, timeout=30, conn_timeout=3, proxies=[]):
-    cliLogger.info('Launching JS spider on: {}'.format(url))
+def main(url, depth=2, timeout=30, conn_timeout=3, proxies=[]):
+    cliLogger.info('Launching JS spider agaist {}'.format(url), bullet='[STATUS] ')
     s = JSearch(url, depth, timeout, conn_timeout, proxies)
     s.start()
     while threading.active_count() > 1:
@@ -137,11 +148,12 @@ def jsearch(url, depth=2, timeout=30, conn_timeout=3, proxies=[]):
             _exit(0)
 
 if __name__ == '__main__':
-    args = argparse.ArgumentParser()
+    args = argparse.ArgumentParser(description="\t\t{0}".format(argv[0]), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
     args.add_argument('-t', dest='timeout', type=int, default=30, help='Spider timeout, 0=None (Default: 30)')
     args.add_argument('-tc', dest='conn_timeout', type=int, default=3, help='Connection timeout')
     args.add_argument('-d', dest='depth', type=int, default=2, help='Spider depth (Default: 2)')
     args.add_argument('-o', dest='outfile', action='store', help='Output to filename to log results')
+    args.add_argument('--spider', dest='spider', action='store_true', help='Show all spider results + JavaScript parsing')
     proxy = args.add_mutually_exclusive_group(required=False)
     proxy.add_argument('--proxy', dest='proxy', action='append', default=[], help='Proxy requests (IP:Port)')
     proxy.add_argument('--proxy-file', dest='proxy', default=False, type=lambda x: file_exists(args, x), help='Load proxies from file for rotation')
@@ -151,8 +163,9 @@ if __name__ == '__main__':
     cliLogger = setup_consoleLogger()
     fileLogger = setup_fileLogger(args.outfile, mode='w')
     fileLogger.info('''Detection,Source URL,Item''')
+    cliLogger.info(BANNER)
 
     for target in ipparser(args.target[0]):
         if not target.startswith(('http://', 'https://')):
             target = "https://"+target
-        jsearch(target, args.depth, args.timeout, args.conn_timeout, args.proxy)
+        main(target, args.depth, args.timeout, args.conn_timeout, args.proxy)

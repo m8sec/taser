@@ -2,17 +2,15 @@ import ssl
 import socket
 
 # Python3 Socket Support Functions
-def create_socket(target, port, SSL=False, timeout=3, ssl_version=ssl.PROTOCOL_SSLv23, blocking=0):
+def create_socket(target, port, SSL=False, timeout=3, ssl_version=ssl.PROTOCOL_SSLv23):
     socket.setdefaulttimeout(timeout)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if blocking:
-        sock.setblocking(1)
     if SSL:
         try:
             sock = ssl.wrap_socket(sock, keyfile=None, certfile=None, server_side=False, cert_reqs=ssl.CERT_NONE, ssl_version=ssl_version)
         except:
             sock = ssl.wrap_socket(sock, keyfile=None, certfile=None, server_side=False, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_TLSv1_2)
-    sock.connect((target, port))
+    sock.connect((target, int(port)))
     return sock
 
 def sock_close(sock):
@@ -50,11 +48,9 @@ def sock_recv(sock):
 
 def get_banner(target, port, ssl=False, timeout=3):
     banner = ''
-    try:
-        sock = create_socket(target, int(port), SSL=ssl, timeout=timeout)
-        banner = sock_recv(sock)
-        if banner[-1] == "\n":
-            banner=banner[:-1]
-    except Exception as e:
-        raise Exception(e)
-    return banner
+    sock = create_socket(target, port, SSL=ssl, timeout=timeout)
+    banner = sock_recv(sock)
+    if banner[-1] == "\n":
+        banner=banner[:-1]
+    sock_close(sock)
+    return banner.strip()

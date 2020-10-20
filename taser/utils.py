@@ -60,3 +60,10 @@ def ranger(size_input):
             t.append(int(x))
     return t
 
+def get_timestamp():
+    return datetime.now().strftime('%m-%d-%Y %H:%M:%S')
+
+def get_filestamp():
+    # Timestamp formatted for filenames
+    return datetime.now().strftime('%m-%d-%y-%H%M%S')
+

@@ -5,15 +5,12 @@ from bs4 import BeautifulSoup
 from tldextract import extract
 from urllib.parse import urlparse
 from requests_ntlm import HttpNtlmAuth
-from requests.adapters import HTTPAdapter
 from taser.resources.user_agents import USERAGENTS
 from urllib3 import disable_warnings, exceptions
-from requests.packages.urllib3.util.retry import Retry
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 disable_warnings(exceptions.InsecureRequestWarning)
 
 class WebSession():
-    '''Create web session to save and establish state'''
     def __init__(self, headers={}, keep_alive=True):
         self.session = requests.Session()
         self.session.headers.update(headers)
@@ -24,29 +21,34 @@ class WebSession():
         if not keep_alive:
             self.session.headers.update({'Connection': 'Close'})
 
-    def retry_request(self, url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries, **kwargs):
+    def retry_request(self, url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries, debug, **kwargs):
         retry = 0
         while retry <= max_retries:
             retry += 1
-            x = self.web_request(url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries=0, **kwargs)
+            x = self.web_request(url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries=0, debug=debug, **kwargs)
             if x:
                 return x
         return False
 
-    def web_request(self, url, method='GET', randomize_agent=True, headers={}, timeout=4, proxies=[], redirects=True, max_retries=0, **kwargs):
+    def web_request(self, url, method='GET', randomize_agent=True, headers={}, timeout=4, proxies=[], redirects=True, max_retries=0, debug=False, **kwargs):
         self.session.headers.update(headers)
-        if randomize_agent: self.session.headers.update({'User-Agent': random_agent()})
+        if randomize_agent:
+            self.session.headers.update({'User-Agent': random_agent()})
+
         try:
             req = requests.Request(method, url, headers=self.session.headers, **kwargs)
             prep = req.prepare()
             return self.session.send(prep, timeout=timeout, verify=False, allow_redirects=redirects, proxies=proxy_randomizer(proxies))
         except requests.exceptions.ConnectionError:
-            return self.retry_request(url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries, **kwargs)
+            if max_retries > 0:
+                return self.retry_request(url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
         except requests.exceptions.Timeout:
-            return self.retry_request(url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries, **kwargs)
-        except:
-            return False
-
+            if max_retries > 0:
+                return self.retry_request(url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
+        except Exception as e:
+            if debug:
+                print("Taser:web_request::{}".format(str(e)))
+        return False
 
     def reset_headers(self, headers={}):
         self.session.headers.clear()
@@ -68,7 +70,7 @@ def retry_request(url, method, headers, timeout, proxies, redirects, max_retries
     while retry < max_retries:
         retry += 1
         if debug: print('Retrying web request [{}] - {}'.format(retry, url))
-        x = web_request(url, method, headers, timeout, proxies, redirects, max_retries=0, **kwargs)
+        x = web_request(url, method, headers, timeout, proxies, redirects, max_retries=0, debug=debug, **kwargs)
         if x:
             return x
     return False
@@ -78,23 +80,22 @@ def web_request(url, method='GET', headers={}, timeout=4, proxies=[], redirects=
         headers['User-Agent'] = random_agent()
 
     ses = requests.Session()
-    # Requests built-in retry doesnt currently support proxy rotation, proxy_randomizer is never re-executed
-    taserRetry = Retry(total=0, status_forcelist=[408,413,429, 502,503,504], backoff_factor=0.3)
-    ses.mount('http://', HTTPAdapter(max_retries=taserRetry))
-    ses.mount('https://', HTTPAdapter(max_retries=taserRetry))
-
     try:
         req = requests.Request(method, url, headers=headers, **kwargs)
         prep = req.prepare()
         return ses.send(prep, timeout=timeout, verify=False, allow_redirects=redirects, proxies=proxy_randomizer(proxies))
     except requests.exceptions.ConnectionError:
-        return retry_request(url, method, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
+        if max_retries > 0:
+            return retry_request(url, method, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
     except requests.exceptions.Timeout:
-        return retry_request(url, method, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
-    except:
-        return False
+        if max_retries > 0:
+            return retry_request(url, method, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
+    except Exception as e:
+        if debug:
+            print("Taser.http:web_request::{}".format(str(e)))
     finally:
         ses.close()
+    return False
 
 def download_file(source, output):
     f = open(output, 'wb+')
@@ -103,7 +104,7 @@ def download_file(source, output):
 
 def exec_rawRequest(raw_data, scheme='https://', debug=False):
     '''Takes in a raw HTTP request formatted as a string,
-    converts into web_request format, and returns the response'''
+    converts into web_request format, and returns the response (dev)'''
     try:
         req = parse_rawRequest(raw_data, scheme)
     except Exception as e:
@@ -159,13 +160,20 @@ def get_statuscode(resp):
     try:
         return resp.status_code
     except:
-        return 'err'
+        return 0
+
+def get_pagetitle(resp):
+    try:
+        soup = BeautifulSoup(resp.content, 'lxml')
+        return(str(soup.title.string.split(",")[0]).strip().strip('\n'))
+    except:
+        return "N/A"
 
 def extract_header(header_field, resp):
     try:
         return resp.headers[header_field].strip()
     except:
-        return False
+        return "N/A"
 
 def extract_links(resp, mailto=False, source={'a':'href', 'script':'src', 'link':'href'}):
     links = []
@@ -182,14 +190,6 @@ def extract_links(resp, mailto=False, source={'a':'href', 'script':'src', 'link'
             else:
                 links.append(resp.url+link)
     return list(set(links))
-
-def get_pagetitle(resp):
-    try:
-        soup = BeautifulSoup(resp.content, 'lxml')
-        return("{}".format(str(soup.title.string.split(",")[0]).strip().strip('\n')))
-    except:
-        return "N/A"
-
 
 #################################
 # URL Parsing / Manipulation
@@ -231,18 +231,29 @@ def extract_path(url):
     return p
 
 def rm_slash(url):
-    # Support function for extract_links
+    '''
+    Will check if URL has ending "/" and remove. used
+    as a support function for extract_links.
+    '''
     if url.endswith('/'):
         url = url[:-1]
     return url
 
 def url_format(url):
+    '''
+    Take in URL and determine if endpoint is a file
+    or directory. Returns value with appropriate "/" ending.
+    Primarily used in directory brute scripts.
+    '''
     u = urlparse(url)
-    if any([u.params, u.query, url.endswith('/'), "." in u.path.split('/')[-1]]):
+    if any(["." in u.path.split('/')[-1], url.endswith('/'), u.params, u.query]):
         return url
-    return url+"/"
+    return url + "/"
 
-def target2url(value, method='https://'):
+def target2url(value, protocol='https'):
+    '''
+    Take input IP or domain value and return formatted URL
+    '''
     if not value.lower().startswith(('http://', 'https://')):
-        value = method + value
+        value = protocol + '://' + value
     return url_format(value)
