@@ -1,5 +1,6 @@
-[0.2.1] - 2020-10
-- Minor updates to support additional example scripts
+[0.2.1] - 2020-11
+- Move tcp functions to PySocks3 class
+- Updates and code improvements to support additional example scripts
 
 [0.2.0] - 2020-10
 - Added smtp, tcp, & ftp protocols
