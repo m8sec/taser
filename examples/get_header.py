@@ -5,12 +5,13 @@
 # response code, page size, title, and HTTP response headers to prioritize
 # potential targets.
 #
-# httpheaders.py --header Server example.com
-# httpheaders.py -T 35 -o report.txt 192.168.1.0/24
+# get_header.py --header Server example.com
+# get_header.py -T 35 -o report.txt 192.168.1.0/24
 
 import argparse
 from sys import argv
 from time import sleep
+from random import sample
 from ipparser import ipparser
 from threading import Thread, active_count
 
@@ -41,15 +42,15 @@ def output_handler(resp, args):
                 if k.lower().startswith(w):
                     cliLogger.info([resp.url, k+":", v])
 
-def minion(url, args):
-    resp = web_request(url)
+def minion(url):
+    resp = web_request(url, proxies=args.proxy, debug=args.verbose)
     if resp:
         output_handler(resp, args)
 
 def main(args, urls):
     for url in urls:
         try:
-            Thread(target=minion, args=(url, args), daemon=True).start()
+            Thread(target=minion, args=(url,), daemon=True).start()
             while active_count() >= args.max_threads:
                 sleep(0.05)
         except KeyboardInterrupt:
@@ -67,7 +68,7 @@ if __name__ == '__main__':
 
     args.add_argument('--port', dest="port", type=int, default=False,help="Define request port")
     args.add_argument('--page', dest="page", type=str, default='/',help="Define request page")
-    args.add_argument('--header', dest="header", type=str, default=False, help="Extract header(s) from response, i.e: Server,X-Powered-By")
+    args.add_argument('-H','--header', dest="header", type=str, default=False, help="Extract header(s) from response, i.e: Server,X-Powered-By")
 
     proxy = args.add_mutually_exclusive_group(required=False)
     proxy.add_argument('--proxy', dest='proxy', action='append', default=[], help='Proxy requests (IP:Port)')
@@ -83,7 +84,8 @@ if __name__ == '__main__':
     cliLogger.info(BANNER)
 
     urls = []
-    for x in ipparser(args.target[0], resolve=args.resolve, open_ports=True, exit_on_error=False):
+    tmp_ip = ipparser(args.target[0], resolve=args.resolve, open_ports=True, exit_on_error=False, debug=False)
+    for x in sample(tmp_ip, len(tmp_ip)):
         proto = [args.protocol] if args.protocol else ['http', 'https']
         for p in proto:
             tmp_x = x[:-1] if x.endswith("/") else x
@@ -93,5 +95,4 @@ if __name__ == '__main__':
 
     if args.header:
         WHITELIST = delimiter2list(args.header, delimiter=",")
-
     main(args, urls)

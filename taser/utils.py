@@ -1,6 +1,8 @@
 import threading
 from os import path
 from time import sleep
+from random import choice
+from string import ascii_letters, digits
 from datetime import datetime, timedelta
 
 class TaserTimeout(threading.Thread):
@@ -23,12 +25,13 @@ class TaserTimeout(threading.Thread):
     def stop(self):
         self.running = False
 
-
 def read_file_lines(file):
     return [line.strip() for line in open(file)]
 
 def file_exists(parser, filename, contents=True):
-    # Argparse support for accepting file
+    '''
+    Argparse support for accepting file
+    '''
     if not path.exists(filename):
         parser.error("Input file not found: {}".format(filename))
     if contents:
@@ -49,7 +52,7 @@ def delimiter2dict(value, delimiter1=";", delimiter2="="):
 
 def ranger(size_input):
     '''
-    Takes comma seperated or range of number inputs and
+    Takes comma separated or range of number inputs and
     returns a single list to iterate over.
     '''
     t = []
@@ -67,3 +70,11 @@ def get_filestamp():
     # Timestamp formatted for filenames
     return datetime.now().strftime('%m-%d-%y-%H%M%S')
 
+def gen_random_string(length=6):
+    return''.join([choice(ascii_letters + digits) for x in range(length)])
+
+def percent_complete(item, item_list, decimal=1):
+    '''
+    Take in item in array and calculate percentage complete for output formatting in programs.
+    '''
+    return "{1:.{0}%}".format(decimal, (item_list.index(item) / len(item_list)))

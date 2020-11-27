@@ -17,7 +17,6 @@ class WebSession():
 
         if 'User-Agent' not in headers:
             self.session.headers.update({'User-Agent': random_agent()})
-
         if not keep_alive:
             self.session.headers.update({'Connection': 'Close'})
 
@@ -30,8 +29,9 @@ class WebSession():
                 return x
         return False
 
-    def web_request(self, url, method='GET', randomize_agent=True, headers={}, timeout=4, proxies=[], redirects=True, max_retries=0, debug=False, **kwargs):
+    def web_request(self, url, method='GET', randomize_agent=False, headers={}, timeout=3, proxies=[], redirects=True, max_retries=0, debug=False, **kwargs):
         self.session.headers.update(headers)
+        # Randomize agent not defined by default, to conserve session
         if randomize_agent:
             self.session.headers.update({'User-Agent': random_agent()})
 
@@ -65,7 +65,9 @@ class WebSession():
 # Single Web Requests
 #################################
 def retry_request(url, method, headers, timeout, proxies, redirects, max_retries, debug, **kwargs):
-    '''Retry web requests on failure, goes outside requests retry adapter to support proxy rotation'''
+    '''
+    Retry web requests on failure, goes outside requests retry adapter to support proxy rotation
+    '''
     retry = 0
     while retry < max_retries:
         retry += 1
@@ -75,7 +77,11 @@ def retry_request(url, method, headers, timeout, proxies, redirects, max_retries
             return x
     return False
 
-def web_request(url, method='GET', headers={}, timeout=4, proxies=[], redirects=True, max_retries=0, debug=False, **kwargs):
+def web_request(url, method='GET', headers={}, timeout=3, proxies=[], redirects=True, max_retries=0, debug=False, **kwargs):
+    '''
+    Generic web request function that uses requests sessions on the back end. Will accept any/all session parameters and
+    return a requests response object. Proxy rotation and max retries support built in.
+    '''
     if 'User-Agent' not in headers:
         headers['User-Agent'] = random_agent()
 
@@ -102,33 +108,52 @@ def download_file(source, output):
     f.write(web_request(source, timeout=5).content)
     f.close()
 
-def exec_rawRequest(raw_data, scheme='https://', debug=False):
-    '''Takes in a raw HTTP request formatted as a string,
-    converts into web_request format, and returns the response (dev)'''
+def exec_rawRequest(raw_data, protocol='https://', timeout=3, debug=False):
+    '''
+    Takes in a raw HTTP request formatted as a string,
+    converts into web_request format, and returns the response.
+    Designed to replay requests from various security tools.
+    '''
     try:
-        req = parse_rawRequest(raw_data, scheme)
+        req = parse_rawRequest(raw_data, protocol)
     except Exception as e:
         if debug: print('Error parsing raw request: {}'.format(str(e)))
         return False
-    return web_request(req['url'], method=req['method'], headers=req['headers'], data=req['data'])
+    return web_request(req['url'], method=req['method'], headers=req['headers'], data=req['data'], timeout=timeout)
 
-def parse_rawRequest(raw_data, scheme):
-    tmp = {'headers':{}, 'data':''''''}
+def parse_rawRequest(raw_data, protocol='http://'):
+    '''
+    Used with exec_rawRequest to take in a raw HTTP request formatted
+    as a string and convert to web_request format before execution.
+    '''
+    blank = False
+    tmp = {
+            'url' : '',
+            'method' : 'GET',
+            'page'   : '/',
+            'version': 'HTTP/1.1',
+            'headers':{},
+            'data':''
+           }
+
     lines = raw_data.splitlines()
     tmp['method'],tmp['page'],tmp['version'] = lines[0].strip().split(' ')
-    for line in lines[1:]:
-        if line:
-            head, val = line.strip().split(': ')
-            tmp['headers'][head] = val
 
-            if head == 'Host':
-                tmp['url'] = scheme + rm_slash(val) + tmp['page']
+    for data in lines[1:]:
+        if data:
+            if blank:
+                # Everything after first blank line will be considered data
+                for x in range(lines.index(data), lines.index(lines[-1]) + 1):
+                    if lines[x]:
+                        tmp['data'] += lines[x]
+                return tmp
+            else:
+                head, val = data.strip().split(': ')
+                tmp['headers'][head] = val
+                if head == 'Host':
+                    tmp['url'] = protocol + rm_slash(val) + tmp['page']
         else:
-            # Everything after first blank line will be considered data
-            for x in range(lines.index(line), lines.index(lines[-1])+1):
-                if lines[x]:
-                    tmp['data'] += lines[x]
-            return tmp
+            blank = True
     return tmp
 
 
@@ -146,7 +171,8 @@ def proxy_randomizer(proxies):
     return {}
 
 def auth_handler(username, password, auth_type='basic'):
-    AUTH = {'basic' :HTTPBasicAuth(username, password),
+    AUTH = {
+            'basic' :HTTPBasicAuth(username, password),
             'ntlm' : HttpNtlmAuth(username, password),
             'digest': HTTPDigestAuth(username, password),
            }
@@ -173,7 +199,7 @@ def extract_header(header_field, resp):
     try:
         return resp.headers[header_field].strip()
     except:
-        return "N/A"
+        return ""
 
 def extract_links(resp, mailto=False, source={'a':'href', 'script':'src', 'link':'href'}):
     links = []
@@ -195,20 +221,34 @@ def extract_links(resp, mailto=False, source={'a':'href', 'script':'src', 'link'
 # URL Parsing / Manipulation
 #################################
 def extract_webdomain(url):
+    '''
+    Given subdomains, urls, etc will return the base URL only.
+    i.e: test.example.com = example.com
+    '''
     x = extract(url)
     if x.suffix:
         return x.domain+'.'+x.suffix
     return x.domain
 
 def extract_subdomain(url):
+    '''
+    Given a URL, will return the subdomain.
+    i.e: https://test.example.com = test.example.com
+    '''
     return urlparse(url).netloc
 
 def extract_baseURL(url):
+    '''
+    Extract the base scheme and domain from a given URL.
+    i.e: https://test.example.com/admin/logon.php = https://test.example.com
+    '''
     x = urlparse(url)
     return x.scheme+"://"+x.netloc
 
 def ipcheck(data):
-    # Check if string contains an IP address
+    '''
+    Check if string contains an IP address and return boolean value.
+    '''
     ip_check = '''(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
                 25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
                 25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
@@ -225,6 +265,12 @@ def internal_ipcheck(data):
     return False
 
 def extract_path(url):
+    '''
+    Extract path of a url with checks for null value
+    i.e:
+        https://example.com/test/admin/01 = /test/admin/01
+        https://example.com = /
+    '''
     p = urlparse(url).path
     if not p:
         p = '/'
@@ -232,7 +278,7 @@ def extract_path(url):
 
 def rm_slash(url):
     '''
-    Will check if URL has ending "/" and remove. used
+    Will check if URL has ending "/" and remove it. Used
     as a support function for extract_links.
     '''
     if url.endswith('/'):
@@ -257,3 +303,16 @@ def target2url(value, protocol='https'):
     if not value.lower().startswith(('http://', 'https://')):
         value = protocol + '://' + value
     return url_format(value)
+
+def get_webDirectory(url):
+    '''
+    Given a URL, will return the current web directory free of
+    page values or parameters.
+    i.e: https://example.com/test/admin.php = https://example.com/test/
+    '''
+    u = urlparse(url)
+    if "." in u.path.split('/')[-1]:
+        pwd = u.scheme + '://' + u.netloc + '/'.join(u.path.split('/')[:-1]) + '/'
+    else:
+        pwd = url
+    return url_format(pwd)

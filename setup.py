@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='taser',
-    version='0.2.0',
+    version='0.2.1',
     author = 'm8r0wn',
     author_email = 'm8r0wn@protonmail.com',
     description = 'Security testing resource library',
@@ -27,10 +27,11 @@ setup(
         'requests[socks]',
         'requests_ntlm',
         'tldextract',
+        'lxml'
     ],
     classifiers = [
         "Programming Language :: Python :: 3",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License"
-    ]
+    ],
 )

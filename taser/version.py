@@ -14,4 +14,4 @@ except:
 
 AUTHOR = 'm8r0wn'
 
-BANNER = "TASER {} - {}    {}\n".format(VERSION, argv[0].split("/")[-1], highlight('#~m8r0wn', fg='gray'))
+BANNER = "TASER {} - {}    {}\n".format(VERSION, argv[0].split("/")[-1], highlight('#~{}'.format(AUTHOR), fg='gray'))

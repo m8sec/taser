@@ -4,17 +4,21 @@
   <img src="https://img.shields.io/badge/Python-3.6+-green.svg"/>&nbsp;
   
   <a href="https://github.com/m8r0wn/taser/LICENSE">
-  <img src="https://img.shields.io/badge/License-BSD%203--Clause-red.svg"></a>&nbsp;
+  <img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg"></a>&nbsp;
   
   <a href="https://github.com/m8r0wn/taser/wiki">
-  <img src="https://img.shields.io/badge/Documentation-wiki-green.svg"/></a>&nbsp;
+  <img src="https://img.shields.io/badge/Documentation-wiki-yellow.svg"/></a>&nbsp;
    
    <a href="https://www.twitter.com/m8r0wn">
   <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue.svg"/></a>&nbsp;
+  
+  <a href="https://www.youtube.com/channel/UC6-HLpd0rpPXmpJIhED8qTw">
+  <img src="https://img.shields.io/badge/Demos-Youtube-red.svg"/></a>&nbsp;
 </p>
 
+
 ## Overview
-TASER *(**T**esting **A**nd **SE**ecurity **R**esource)* is a Python resource library used to simplify the process of creating offensive security tooling, especially those relating to web or external assessments. It's modular design makes it easy for code to be customized and re-purposed in a variety of scenarios. 
+TASER *(Testing And Security Resource)* is a Python resource library used to simplify the process of creating offensive security tooling, especially those relating to web or external assessments. It's modular design makes it easy for code to be customized and re-purposed in a variety of scenarios. 
 
 #### Key features
 

@@ -5,7 +5,7 @@
 # of brute forcing sites with the "Authorization" HTTP request header. This will NOT
 # add POST data to the request or check anything but HTTP response status codes for valid results.
 #
-# httpbrute.py -U users.txt -p Password123 -a ntlm https://example.com/ad_connect/login.aspx
+# httpauth.py -U users.txt -p Password123 -a ntlm https://example.com/ad_connect/login.aspx
 
 import argparse
 import threading

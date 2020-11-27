@@ -4,5 +4,4 @@ requests[socks]
 requests_ntlm
 tldextract
 dnspython
-impacket
 lxml

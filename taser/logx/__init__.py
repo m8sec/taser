@@ -13,9 +13,9 @@ def setup_consoleLogger(log_level=logging.INFO, logger_name='taser_cli', spacers
     logger.setLevel(log_level)
     return TaserAdapter(logger_name, spacers)
 
-def setup_fileLogger(filename, mode='a', log_level=logging.INFO, logger_name='taser_file'):
+def setup_fileLogger(filename, mode='a', log_level=logging.INFO, logger_name='taser_file', log_format='%(message)s'):
     '''Create standard logger for file output'''
-    formatter = logging.Formatter('%(message)s')
+    formatter = logging.Formatter(log_format)
     if filename:
         fileHandler = logging.FileHandler(filename, mode=mode)
         fileHandler.setFormatter(formatter)
