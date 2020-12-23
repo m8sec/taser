@@ -54,6 +54,7 @@ class PySocks3():
             return data.decode('utf-8').rstrip('\n')
 
 def get_banner(target, port, ssl=False, timeout=3):
+    banner = False
     try:
         s = PySocks3().connect(target, port, SSL=ssl, timeout=timeout)
         banner = s.recv().strip()

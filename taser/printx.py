@@ -1,4 +1,6 @@
+import os
 from sys import stdout
+
 STYLE = {'None'      : '0', 'bold'      : '1', 'disable'   : '2',
          'underline' : '4', 'blink'     : '5', 'reverse'   : '7',
          'invisible' : '8', 'strike'    : '9'}
@@ -15,7 +17,7 @@ def code_gen(data, style, color, highlight, windows=False):
     return data if windows else '\033[0{}{}{}m{}\033[0m'.format(STYLE[style], FG[color], BG[highlight], data)
 
 def highlight(data, fg='blue', style='bold', bg='None', windows=False):
-    return code_gen(data, style, fg, bg, windows)
+    return code_gen(data, style, fg, bg, windows=True if os.name == 'nt' else False)
 
 def colored(data, fg='None', style='None', bg='None'):
     stdout.write("{}\n".format(code_gen(data, style, fg, bg)))

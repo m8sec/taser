@@ -21,30 +21,30 @@ from taser.utils import file_exists, delimiter2list
 from taser.logx import setup_fileLogger, setup_consoleLogger
 from taser.proto.http import extract_header, get_pagetitle, get_statuscode, web_request, target2url
 
-WHITELIST = ['host', 'server', 'x-', 'access-', 'allow', 'www-', 'cache', 'origin', 'via', 'link']
+DEFAULT = ['host', 'server', 'x-', 'access-', 'allow', 'www-', 'cache', 'origin', 'via', 'link']
 BLACKLIST = ['X-XSS-Protection','XSS-Protection','Strict-Transport-Security','X-Content-Type-Options',
                 'Accept-Ranges','Content-Length','Connection','Date','ETag']
 
 def output_handler(resp, args):
     cliLogger.info([resp.url, highlight('Title',fg='gray'), '\t    ({})\t {}'.format(get_statuscode(resp), get_pagetitle(resp))])
     if args.header:
-        for x in WHITELIST:
+        for x in delimiter2list(args.header, delimiter=","):
             h = extract_header(x, resp)
-            if h != "N/A":
+            if h:
                 cliLogger.info([resp.url, x+":", h])
-    if args.verbose:
+    elif args.verbose:
         for k,v in resp.headers.items():
             if k not in BLACKLIST:
                 cliLogger.info([resp.url, k+":", v])
     else:
         for k, v in resp.headers.items():
-            for w in WHITELIST:
+            for w in DEFAULT:
                 if k.lower().startswith(w):
                     cliLogger.info([resp.url, k+":", v])
 
 def minion(url):
     resp = web_request(url, proxies=args.proxy, debug=args.verbose)
-    if resp:
+    if get_statuscode(resp) != 0:
         output_handler(resp, args)
 
 def main(args, urls):
@@ -61,7 +61,7 @@ def main(args, urls):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description="\t\t{0}".format(argv[0]), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
-    args.add_argument('-t', dest='timeout', type=int, default=3, help='Connection timeout')
+    args.add_argument('-t', dest='timeout', type=int, default=4, help='Connection timeout')
     args.add_argument('-v', dest="verbose", action='store_true', help='Show full responses')
     args.add_argument('-T', dest='max_threads', type=int, default=45, help='Max threads (Default: 5)')
     args.add_argument('-o', dest='outfile', action='store', help='Filename to write results (optional)')
@@ -93,6 +93,4 @@ if __name__ == '__main__':
             u = target2url(tmp_x+args.page, protocol=p)
             urls.append(u) if u not in urls else urls
 
-    if args.header:
-        WHITELIST = delimiter2list(args.header, delimiter=",")
     main(args, urls)

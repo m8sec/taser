@@ -1,7 +1,7 @@
 import threading
 from taser import printx
 from taser.utils import TaserTimeout
-from taser.proto.http import web_request, extract_links, extract_webdomain, extract_subdomain
+from taser.proto.http import web_request, extract_links, extract_webdomain, get_statuscode
 
 class WebSearch(threading.Thread):
     URL = {'google': 'https://www.google.com/search?q={}&num=100&start={}',
@@ -36,7 +36,7 @@ class WebSearch(threading.Thread):
 
             search_url = self.linkModifier(search_engine, search_query)
             resp= web_request(search_url, timeout=self.conn_timeout, proxies=self.proxies)
-            if resp:
+            if get_statuscode(resp) != 0:
                 self.pageParser(resp, search_engine, search_query)
         search_timeout.stop()
         return self.links

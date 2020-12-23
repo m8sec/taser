@@ -3,7 +3,7 @@ from taser import printx
 from urllib.parse import urlparse
 from taser.utils import TaserTimeout
 from urllib3 import disable_warnings, exceptions
-from taser.proto.http import web_request, extract_links, extract_webdomain, extract_subdomain
+from taser.proto.http import web_request, extract_links, extract_webdomain, extract_subdomain, get_statuscode
 disable_warnings(exceptions.InsecureRequestWarning)
 
 class Spider(threading.Thread):
@@ -59,7 +59,7 @@ class Spider(threading.Thread):
         src_url = self.linkModifier(src_url)
         next_depth = (self.__cur_depth+1)
         resp = web_request(src_url, timeout=self.conn_timeout, proxies=self.proxies)
-        if resp:
+        if get_statuscode(resp) != 0:
             self.pageParser(resp, next_depth)
 
     def pageParser(self, resp, next_depth):
