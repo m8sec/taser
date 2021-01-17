@@ -6,7 +6,7 @@
 import base64
 import datetime
 from collections import OrderedDict
-from taser.proto.http import web_request
+from taser.proto.http import web_request, get_statuscode
 
 # Common pages where NTLM auth can occur
 NTLM_PAGES = ["/", "/owa", "/EWS", "/autodiscover"]
@@ -223,7 +223,7 @@ def prompt_NTLM(url, timeout, proxies=[]):
       }
     request = web_request(url, timeout=timeout, headers=h, proxies=proxies)
 
-    if request.status_code not in [401, 302]:
+    if get_statuscode(request) not in [401, 302]:
         return challenge
 
     auth_header = request.headers.get('WWW-Authenticate')

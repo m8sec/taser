@@ -4,6 +4,7 @@ import dns.zone
 import dns.query
 import dns.resolver
 import dns.reversename
+from taser.utils import ipcheck
 
 def dns_lookup(host, dns_lookup, nameserver=[]):
     # Lookups = ['A','NS','MX','TXT','CNAME','HINFO','PTR','SOA','SPF','SRV','RP']
@@ -25,11 +26,12 @@ def reverse_lookup(host, nameserver=[]):
 def get_nameServers(domain, nameserver=[]):
     results = []
     for srv in dns_lookup(domain, 'NS', nameserver=nameserver):
-        results.append(get_ip(srv))
+        results.append(srv[:-1] if srv.endswith('.') else srv)
     return results
 
 def zone_transfer(ns, domain):
     results = []
+    ns = ns if ipcheck(ns) else get_ip(ns)
     z = dns.zone.from_xfr(dns.query.xfr(ns, domain))
     names = z.nodes.keys()
     for n in names:

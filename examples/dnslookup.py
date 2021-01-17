@@ -52,29 +52,33 @@ def get_domainNS(domain):
     except:
         return NS
 
-def zoneTransfer(targets, data_only):
+def get_zoneTransfer(target, ns):
+    try:
+        query = zone_transfer(ns, target)
+        cliLogger.success('Zone Transfer {}@{}'.format(target, ns))
+        fileLogger.info('Zone Transfer {}@{}'.format(target, ns))
+
+        for x in query:
+            cliLogger.write(x)
+            fileLogger.info(x)
+    except Exception as e:
+        if args.verbose:
+            cliLogger.fail('{}@{}\t\t{}'.format(target, ns, str(e)))
+
+def zoneTransfer(targets, ns=False):
     for t in targets:
-        for n in get_domainNS(t):
-            try:
-                query = zone_transfer(n, t)
-                cliLogger.success('Zone Transfer {}@{}'.format(t, n))
-                for x in query:
-                    if data_only:
-                        cliLogger.write(x)
-                        fileLogger.info(x)
-                    else:
-                        cliLogger.info(x)
-                        fileLogger.info(x)
-            except Exception as e:
-                if args.verbose:
-                    cliLogger.fail('{}@{}\t\t{}'.format(t,n,str(e)))
+        if ns:
+            get_zoneTransfer(t, ns)
+        else:
+            for n in get_domainNS(t):
+                get_zoneTransfer(t, n)
 
 def main(args):
     try:
         if args.rev:
             reverse_dns(args.target, args.data_only)
         elif args.zonetransfer:
-            zoneTransfer(args.target, args.data_only)
+            zoneTransfer(args.target, ns=args.nameserver)
         else:
             dns_type(args.target, args.data_only)
     except KeyboardInterrupt:

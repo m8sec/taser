@@ -24,10 +24,10 @@ from bs4 import BeautifulSoup
 from ipparser import ipparser
 
 from taser.version import BANNER
-from taser.utils import file_exists
+from taser.utils import file_exists, ipcheck
 from taser.proto.http.spider import Spider
 from taser.logx import setup_fileLogger, setup_consoleLogger
-from taser.proto.http import extract_webdomain, extract_subdomain, extract_links, ipcheck
+from taser.proto.http import extract_webdomain, extract_subdomain, extract_links
 
 class JSearch(Spider):
     def __init__(self, url, depth, timeout, conn_timeout, proxies, debug=False):

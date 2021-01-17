@@ -1,3 +1,4 @@
+import re
 import threading
 from os import path
 from time import sleep
@@ -78,3 +79,23 @@ def percent_complete(item, item_list, decimal=1):
     Take in item in array and calculate percentage complete for output formatting in programs.
     '''
     return "{1:.{0}%}".format(decimal, (item_list.index(item) / len(item_list)))
+
+def ipcheck(data):
+    '''
+    Check if string contains an IP address and return boolean value.
+    '''
+    ip_check = '''(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+                25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+                25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.( 
+                25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)'''
+    if re.search(ip_check, data):
+        return True
+    return False
+
+def internal_ipcheck(data):
+    # Must submit exact IP not string to check
+    ip_check = r'''(^127\.)|(^192\.168\.)|(^10\.)|(^172\.1[6-9]\.)|(^172\.2[0-9]\.)|(^172\.3[0-1]\.)|(^::1$)|(^[fF][cCdD])/'''
+    if re.search(ip_check, data):
+        return True
+    return False
+
