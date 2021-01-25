@@ -7,23 +7,19 @@ from taser.proto.http import web_request, extract_links, extract_webdomain, extr
 disable_warnings(exceptions.InsecureRequestWarning)
 
 class Spider(threading.Thread):
-    '''
-    Web spider class to recursively crawl web pages for links. Creates an persistent web session
-    through HTTP connection headers increase speed and to reduce overhead. Spider can be controlled
-    through defining a max scan depth or a run timeout.
-    ** Use inheritance to customize link & output handlers **
-    '''
-    def __init__(self, url, depth=2, timeout=30, conn_timeout=3, proxies=[]):
+    def __init__(self, url, depth=2, timeout=30, conn_timeout=3, headers={}, proxies=[]):
         threading.Thread.__init__(self)
         self.__cur_depth = 1
         self.__url_parsed = []
         self.__url_queue = {}
+
+        self.depth = depth
+        self.timeout = timeout
+        self.headers = headers
+        self.proxies = proxies
+        self.conn_timeout = conn_timeout
         self.base_domain = extract_webdomain(url).lower()
         self.base_subdomain = extract_subdomain(url).lower()
-        self.timeout = timeout
-        self.conn_timeout = conn_timeout
-        self.depth = depth
-        self.proxies = proxies
 
         for x in range(1,self.depth+2):
             if x == 1:
@@ -56,9 +52,13 @@ class Spider(threading.Thread):
         return url
 
     def crawl(self, src_url):
+        '''
+        Execute web request and send to parser
+        '''
         src_url = self.linkModifier(src_url)
         next_depth = (self.__cur_depth+1)
-        resp = web_request(src_url, timeout=self.conn_timeout, proxies=self.proxies)
+        resp = web_request(src_url, timeout=self.conn_timeout, headers=self.headers, proxies=self.proxies)
+
         if get_statuscode(resp) != 0:
             self.pageParser(resp, next_depth)
 

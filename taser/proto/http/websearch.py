@@ -7,12 +7,14 @@ class WebSearch(threading.Thread):
     URL = {'google': 'https://www.google.com/search?q={}&num=100&start={}',
            'bing': 'http://www.bing.com/search?q={}&first={}'}
 
-    def __init__(self, search_engine='bing', search_query='', timeout=30, conn_timeout=3, proxies=[]):
+    def __init__(self, search_engine='bing', search_query='', timeout=30, conn_timeout=3, headers={}, proxies=[]):
+
         threading.Thread.__init__(self)
         self.links   = []
         self.running = True
         self.timeout = timeout
         self.proxies = proxies
+        self.headers = headers
         self.conn_timeout = conn_timeout
         self.search_query = search_query
         self.search_engine = search_engine
@@ -35,7 +37,7 @@ class WebSearch(threading.Thread):
             found_links = self.page_links
 
             search_url = self.linkModifier(search_engine, search_query)
-            resp= web_request(search_url, timeout=self.conn_timeout, proxies=self.proxies)
+            resp= web_request(search_url, timeout=self.conn_timeout, headers=self.headers, proxies=self.proxies)
             if get_statuscode(resp) != 0:
                 self.pageParser(resp, search_engine, search_query)
         search_timeout.stop()

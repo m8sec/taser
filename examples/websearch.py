@@ -19,7 +19,7 @@ from taser.logx import setup_fileLogger, setup_consoleLogger
 
 class WebSearcher(WebSearch):
     def __init__(self, search_engine='bing', search_query='', timeout=30, conn_timeout=3, proxies=[]):
-        WebSearch.__init__(self, search_engine, search_query, timeout, conn_timeout, proxies)
+        WebSearch.__init__(self, search_engine, search_query, timeout, conn_timeout, proxies=proxies)
 
     def linkHander(self, url, search_engine, search_query):
         if url not in self.links:

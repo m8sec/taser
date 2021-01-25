@@ -19,7 +19,7 @@ from taser.logx import setup_fileLogger, setup_consoleLogger
 
 class TaserSpider(Spider):
     def __init__(self, url, depth, timeout, conn_timeout, proxies):
-        Spider.__init__(self, url, depth, timeout, conn_timeout, proxies)
+        Spider.__init__(self, url, depth, timeout, conn_timeout, proxies=proxies)
 
     def outputHandler(self, url, src_url):
         subdomain = extract_subdomain(url).lower()
