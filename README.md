@@ -7,10 +7,10 @@
   <img src="https://img.shields.io/badge/Documentation-wiki-yellow.svg"/></a>&nbsp;
    
    <a href="https://www.twitter.com/m8r0wn">
-  <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue.svg"/></a>&nbsp;
+  <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue.svg?logo=twitter"/></a>&nbsp;
   
   <a href="https://github.com/sponsors/m8r0wn">
-  <img src="https://img.shields.io/badge/Sponsor-GitHub-green?style=plastic&logo=github"/></a>&nbsp;
+  <img src="https://img.shields.io/badge/Sponsor-GitHub-green?logo=github"/></a>&nbsp;
 </p>
 
 
