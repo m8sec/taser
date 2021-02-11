@@ -2,18 +2,15 @@
   <img src="https://user-images.githubusercontent.com/13889819/89195623-03cfdc80-d577-11ea-8433-e0a4e8e03761.png">
   <br>
   <img src="https://img.shields.io/badge/Python-3.6+-green.svg"/>&nbsp;
-  
-  <a href="https://github.com/m8r0wn/taser/LICENSE">
-  <img src="https://img.shields.io/badge/License-BSD%203--Clause-blue.svg"></a>&nbsp;
-  
+
   <a href="https://github.com/m8r0wn/taser/wiki">
   <img src="https://img.shields.io/badge/Documentation-wiki-yellow.svg"/></a>&nbsp;
    
    <a href="https://www.twitter.com/m8r0wn">
   <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue.svg"/></a>&nbsp;
   
-  <a href="https://www.youtube.com/channel/UC6-HLpd0rpPXmpJIhED8qTw">
-  <img src="https://img.shields.io/badge/Demos-Youtube-red.svg"/></a>&nbsp;
+  <a href="https://github.com/sponsors/m8r0wn">
+  <img src="https://img.shields.io/badge/Sponsor-GitHub-green?style=plastic&logo=github"/></a>&nbsp;
 </p>
 
 
