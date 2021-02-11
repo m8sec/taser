@@ -45,7 +45,9 @@ class WebSession():
             if max_retries > 0:
                 return self.retry_request(url, method, randomize_agent, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
         except Exception as e:
-            if debug:
+            if 'Exceeded 30 redirects.' in str(e):
+                return retry_request(url, method, headers, timeout, proxies, redirects=False, max_retries=1, debug=debug, **kwargs)
+            elif debug:
                 print("Taser:web_request::{}".format(str(e)))
         return False
 
@@ -70,7 +72,7 @@ def retry_request(url, method, headers, timeout, proxies, redirects, max_retries
     retry = 0
     while retry < max_retries:
         retry += 1
-        if debug: print('Retrying web request [{}] - {}'.format(retry, url))
+        if debug: print('Taser.http:web_request:: Retrying [{}] - {}'.format(retry, url))
         x = web_request(url, method, headers, timeout, proxies, redirects, max_retries=0, debug=debug, **kwargs)
         if x:
             return x
@@ -96,7 +98,9 @@ def web_request(url, method='GET', headers={}, timeout=3, proxies=[], redirects=
         if max_retries > 0:
             return retry_request(url, method, headers, timeout, proxies, redirects, max_retries, debug, **kwargs)
     except Exception as e:
-        if debug:
+        if 'Exceeded 30 redirects.' in str(e):
+            return retry_request(url, method, headers, timeout, proxies, redirects=False, max_retries=1, debug=debug, **kwargs)
+        elif debug:
             print("Taser.http:web_request::{}".format(str(e)))
     finally:
         ses.close()

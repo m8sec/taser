@@ -64,7 +64,7 @@ class Spider(threading.Thread):
 
     def pageParser(self, resp, next_depth):
         '''
-        Determines which pages or items are parse in HTTP Request. Responsible for calling
+        Determines which pages or items are parsed from the HTTP Response. Responsible for calling
         link and output handler methods to continue recursive spider.
         '''
         if resp.headers['Content-Type'].startswith('text/html'):

@@ -31,7 +31,7 @@ from taser.proto.http import extract_webdomain, extract_subdomain, extract_links
 
 class JSearch(Spider):
     def __init__(self, url, depth, timeout, conn_timeout, proxies, debug=False):
-        Spider.__init__(self, url, depth, timeout, conn_timeout, proxies)
+        Spider.__init__(self, url, depth, timeout, conn_timeout, proxies=proxies)
         self.debug = debug
         self.subdomains = [extract_subdomain(url)]
         self.emails = []
