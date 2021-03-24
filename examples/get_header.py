@@ -26,7 +26,7 @@ BLACKLIST = ['X-XSS-Protection','XSS-Protection','Strict-Transport-Security','X-
                 'Accept-Ranges','Content-Length','Connection','Date','ETag']
 
 def output_handler(resp, args):
-    cliLogger.info([resp.url, highlight('Title',fg='gray'), '\t    ({})\t {}'.format(get_statuscode(resp), get_pagetitle(resp))])
+    cliLogger.info([resp.url, highlight('Title',fg='gray'), '\t         ({})\t {}'.format(get_statuscode(resp), get_pagetitle(resp))])
     if args.header:
         for x in delimiter2list(args.header, delimiter=","):
             h = extract_header(x, resp)
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     args.add_argument(dest='target', nargs='+', help='Target')
     args = args.parse_args()
 
-    cliLogger = setup_consoleLogger(spacers=[40,30,])
+    cliLogger = setup_consoleLogger(spacers=[45,30,])
     fileLogger = setup_fileLogger(args.outfile, mode='w')
     cliLogger.info(BANNER)
 

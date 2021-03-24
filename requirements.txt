@@ -1,5 +1,6 @@
 bs4
 requests
+ipparser
 requests[socks]
 requests_ntlm
 tldextract

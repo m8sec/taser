@@ -28,12 +28,13 @@ def worker(context):
         a = auth_handler(context.user, context.password, auth_type=context.auth_type)
         r = web_request(context.target, method=context.method, timeout=context.timeout, proxies=context.proxy, auth=a)
         code = r.status_code
+        size = len(r.text)
     except Exception as e:
         pass
     if code not in [0,401]:
-        cliLogger.success("{:<35} {:<30} {:<24} (Code: {})".format(context.user, context.password, highlight('Success', fg='green'), code))
+        cliLogger.success("{:<35} {:<30} {:<24} (Code: {} | Size: {})".format(context.user, context.password, highlight('Success', fg='green'), code, size))
     elif context.verbose:
-        cliLogger.fail("{:<35} {:<30} {:<24} (Code: {})".format(context.user, context.password, highlight('Failed', fg='red'), code))
+        cliLogger.fail("{:<35} {:<30} {:<24} (Code: {} | Size: {}))".format(context.user, context.password, highlight('Failed', fg='red'), code, size))
     fileLogger.info("{}\t{}\t{}\t{}\t{}".format(get_timestamp(), context.target, code, context.user, context.password))
     sleep(context.jitter)
 

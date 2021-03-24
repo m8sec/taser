@@ -216,12 +216,11 @@ def parse_challenge(challenge_message):
 ###########################################
 # Check for NTLM information Disclosure
 ###########################################
-def prompt_NTLM(url, timeout, proxies=[]):
+def prompt_NTLM(url, timeout, headers={}, proxies=[]):
     challenge = {}
-    h = {
-        'Authorization': 'NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=',
-      }
-    request = web_request(url, timeout=timeout, headers=h, proxies=proxies)
+    headers['Authorization'] = 'NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=',
+
+    request = web_request(url, timeout=timeout, headers=headers, proxies=proxies)
 
     if get_statuscode(request) not in [401, 302]:
         return challenge

@@ -35,7 +35,7 @@ def dns_type(targets, data_only):
 def reverse_dns(targets, data_only):
     for t in targets:
         try:
-            for x in reverse_lookup(t):
+            for x in reverse_lookup(t, NS):
                 if data_only:
                     cliLogger.write(x)
                     fileLogger.info(x)
