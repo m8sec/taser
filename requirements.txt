@@ -1,6 +1,6 @@
 bs4
 requests
-ipparser
+ipparser>=0.3.8
 requests[socks]
 requests_ntlm
 tldextract

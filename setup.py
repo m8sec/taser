@@ -21,7 +21,7 @@ setup(
         '': ['*']
     },
     install_requires=[
-        'ipparser',
+        'ipparser>=0.3.8',
         'bs4',
         'dnspython',
         'requests',
