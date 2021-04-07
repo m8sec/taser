@@ -85,7 +85,6 @@ def web_request(url, method='GET', headers={}, timeout=3, proxies=[], redirects=
     '''
     if 'User-Agent' not in headers:
         headers['User-Agent'] = random_agent()
-
     ses = requests.Session()
     try:
         req = requests.Request(method, url, headers=headers, **kwargs)

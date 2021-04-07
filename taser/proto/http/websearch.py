@@ -1,4 +1,5 @@
 import threading
+from time import sleep
 from taser import printx
 from taser.utils import TaserTimeout
 from taser.proto.http import web_request, extract_links, extract_webdomain, get_statuscode
@@ -7,7 +8,7 @@ class WebSearch(threading.Thread):
     URL = {'google': 'https://www.google.com/search?q={}&num=100&start={}',
            'bing': 'http://www.bing.com/search?q={}&first={}'}
 
-    def __init__(self, search_engine='bing', search_query='', timeout=30, conn_timeout=3, headers={}, proxies=[]):
+    def __init__(self, search_engine='bing', search_query='', timeout=30, conn_timeout=3, headers={}, proxies=[], jitter=0):
 
         threading.Thread.__init__(self)
         self.links   = []
@@ -15,6 +16,7 @@ class WebSearch(threading.Thread):
         self.timeout = timeout
         self.proxies = proxies
         self.headers = headers
+        self.jitter = jitter
         self.conn_timeout = conn_timeout
         self.search_query = search_query
         self.search_engine = search_engine
@@ -24,7 +26,8 @@ class WebSearch(threading.Thread):
 
     def search(self, search_engine, search_query):
         search_timeout = TaserTimeout(self.timeout)
-        search_timeout.start()
+        if self.timeout > 0:
+            search_timeout.start()
 
         self.total_links = 0    # Total Links found by search engine
         self.page_links = 0     # Total links found by search engine w/ our domain in URL
@@ -61,6 +64,7 @@ class WebSearch(threading.Thread):
                 self.page_links += 1
                 self.linkHander(url, search_engine, search_query)
                 self.outputHandler(url, search_engine, search_query)
+        sleep(self.jitter)
 
     def linkHander(self, url, search_engine, search_query):
         '''

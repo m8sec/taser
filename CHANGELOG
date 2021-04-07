@@ -1,3 +1,9 @@
+[0.3.3] 2021-04
+- Add proxy and header options to jsearch example
+- Jitter option in http WebSearch class
+- Debug option in http prompt_NTLM
+- Minor updates
+
 [0.3.1] 2021-02
 -modify web_request
 -fix internal_ip regex

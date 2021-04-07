@@ -8,57 +8,6 @@ import datetime
 from collections import OrderedDict
 from taser.proto.http import web_request, get_statuscode
 
-# Common pages where NTLM auth can occur
-NTLM_PAGES = ["/", "/owa", "/EWS", "/autodiscover"]
-
-NTLM_PAGES_FULL = [
-    "/",
-    "/abs",
-    "/aspnet_client/",
-    "/Autodiscover",
-    "/Autodiscover/AutodiscoverService.svc/root",
-    "/Autodiscover/Autodiscover.xml",
-    "/AutoUpdate/",
-    "/CertEnroll/",
-    "/CertProv",
-    "/CertSrv/",
-    "/Conf/",
-    "/dialin",
-    "/ecp/",
-    "/Etc/",
-    "/ews"
-    "/EWS/",
-    "/Exchange/",
-    "/Exchweb/",
-    "/GroupExpansion/",
-    "/HybridConfig",
-    "/iwa/authenticated.aspx",
-    "/iwa/iwa_test.aspx",
-    "/mcx",
-    "/meet",
-    "/Microsoft-Server-ActiveSync/",
-    "/OAB/",
-    "/ocsp/",
-    "/owa/",
-    "/PersistentChat",
-    "/PhoneConferencing/",
-    "/PowerShell/",
-    "/Public/",
-    "/Reach/sip.svc",
-    "/RequestHandler/",
-    "/RequestHandlerExt",
-    "/RequestHandlerExt/",
-    "/Rgs/",
-    "/RgsClients",
-    "/Rpc/",
-    "/RpcWithCert/",
-    "/scheduler",
-    "/Ucwa",
-    "/UnifiedMessaging/",
-    "/WebTicket",
-    "/WebTicket/WebTicketService.svc"
-    "/web.config"
-    ]
 
 def decode_string(byte_string):
     return byte_string.decode('UTF-8').replace('\x00', '')
@@ -128,7 +77,6 @@ def parse_negotiate_flags(negotiate_flags_int):
             negotiate_flags.append(name)
     return negotiate_flags
 
-
 def parse_target_info(target_info_bytes):
     MsvAvEOL = 0x0000
     MsvAvNbComputerName = 0x0001
@@ -141,6 +89,7 @@ def parse_target_info(target_info_bytes):
     MsvAvSingleHost = 0x0008
     MsvAvTargetName = 0x0009
     MsvAvChannelBindings = 0x000A
+
     target_info = OrderedDict()
     info_offset = 0
 
@@ -148,7 +97,9 @@ def parse_target_info(target_info_bytes):
         av_id = decode_int(target_info_bytes[info_offset:info_offset + 2])
         av_len = decode_int(target_info_bytes[info_offset + 2:info_offset + 4])
         av_value = target_info_bytes[info_offset + 4:info_offset + 4 + av_len]
+
         info_offset = info_offset + 4 + av_len
+
         if av_id == MsvAvEOL:
             pass
         elif av_id == MsvAvNbComputerName:
@@ -178,34 +129,44 @@ def parse_target_info(target_info_bytes):
 
 
 def parse_challenge(challenge_message):
+    # Signature
     signature = decode_string(challenge_message[0:7])  # b'NTLMSSP\x00' --> NTLMSSP
+
+    # MessageType
     message_type = decode_int(challenge_message[8:12])  # b'\x02\x00\x00\x00' --> 2
 
+    # TargetNameFields
     target_name_fields = challenge_message[12:20]
     target_name_len = decode_int(target_name_fields[0:2])
     target_name_max_len = decode_int(target_name_fields[2:4])
     target_name_offset = decode_int(target_name_fields[4:8])
 
+    # NegotiateFlags
     negotiate_flags_int = decode_int(challenge_message[20:24])
     negotiate_flags = parse_negotiate_flags(negotiate_flags_int)
 
+    # ServerChallenge
     server_challenge = challenge_message[24:32]
+    # Reserved
     reserved = challenge_message[32:40]
 
+    # TargetInfoFields
     target_info_fields = challenge_message[40:48]
     target_info_len = decode_int(target_info_fields[0:2])
     target_info_max_len = decode_int(target_info_fields[2:4])
     target_info_offset = decode_int(target_info_fields[4:8])
 
+    # Version
     version_bytes = challenge_message[48:56]
     version = parse_version(version_bytes)
 
+    # TargetName
     target_name = challenge_message[target_name_offset:target_name_offset + target_name_len]
     target_name = decode_string(target_name)
 
+    # TargetInfo
     target_info_bytes = challenge_message[target_info_offset:target_info_offset + target_info_len]
     target_info = parse_target_info(target_info_bytes)
-
     return {
         'target_name': target_name,
         'version': version,
@@ -216,20 +177,23 @@ def parse_challenge(challenge_message):
 ###########################################
 # Check for NTLM information Disclosure
 ###########################################
-def prompt_NTLM(url, timeout, headers={}, proxies=[]):
+def prompt_NTLM(url, timeout, headers={}, proxies=[], debug=False):
     challenge = {}
-    headers['Authorization'] = 'NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA=',
-
-    request = web_request(url, timeout=timeout, headers=headers, proxies=proxies)
+    h = headers.copy()
+    h['Authorization'] = 'NTLM TlRMTVNTUAABAAAAB4IIAAAAAAAAAAAAAAAAAAAAAAA='
+    request = web_request(url, headers=h, timeout=timeout, proxies=proxies, debug=debug)
 
     if get_statuscode(request) not in [401, 302]:
         return challenge
 
+    # get auth header
     auth_header = request.headers.get('WWW-Authenticate')
-
-    if not auth_header:
+    if not auth_header or not 'NTLM' in auth_header:
         return challenge
 
+    # get challenge message from header
     challenge_message = base64.b64decode(auth_header.split(' ')[1].replace(',', ''))
+
+    # parse challenge
     challenge = parse_challenge(challenge_message)
     return challenge

@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='taser',
-    version='0.3.2',
+    version='0.3.3',
     author = 'm8r0wn',
     author_email = 'm8r0wn@protonmail.com',
     description = 'Security testing resource library',

@@ -149,7 +149,6 @@ def main(url, depth, timeout, conn_timeout, headers, proxies):
 
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description="\t\t{0}".format(argv[0]), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
-
     args.add_argument('-d', dest='depth', type=int, default=2, help='Spider depth (Default: 2)')
     args.add_argument('-t', dest='timeout', type=int, default=30, help='Script timeout, 0=None (Default: 30)')
     args.add_argument('-tc', dest='conn_timeout', type=int, default=3, help='Indv connection timeout')

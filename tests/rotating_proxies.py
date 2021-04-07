@@ -10,10 +10,8 @@ target = 'http://ident.me'
 
 # proxy_list
 proxies = [
-    'socks4://119.235.50.26:4145',
-    'socks4://103.107.68.33:5430',
-    'socks4://103.211.8.149:52616',
-    'socks5://badproxy-abc123.com',
+    'socks4://proxy.com:52616',
+    'socks5://proxy.com:9000',
 ]
 
 for x in range(0,3):

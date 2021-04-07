@@ -59,6 +59,6 @@ class TaserAdapter(logging.LoggerAdapter):
         msg, kwargs = self.process(highlight(msg, 'gray', windows=self.windows), kwargs, fg, bg, style, bullet)
         self.logger.warning(msg, *args, **kwargs)
 
-    def debug(self, msg, *args, **kwargs):
-        msg, kwargs = self.process(msg, kwargs, color='cyan', highlight='None', style='bold', bullet='[~] ')
+    def debug(self, msg, bullet='[~] ', fg='cyan', bg='None', style='bold', *args, **kwargs):
+        msg, kwargs = self.process(msg, kwargs, fg, bg, style, bullet)
         self.logger.debug(msg, *args, **kwargs)

@@ -1,17 +1,20 @@
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/13889819/89195623-03cfdc80-d577-11ea-8433-e0a4e8e03761.png">
-  <br>
-  <img src="https://img.shields.io/badge/Python-3.6+-green.svg"/>&nbsp;
-
-  <a href="https://github.com/m8r0wn/taser/wiki">
-  <img src="https://img.shields.io/badge/Documentation-wiki-yellow.svg"/></a>&nbsp;
-   
-   <a href="https://www.twitter.com/m8r0wn">
-  <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue.svg?logo=twitter"/></a>&nbsp;
-  
-  <a href="https://github.com/sponsors/m8r0wn">
-  <img src="https://img.shields.io/badge/Sponsor-GitHub-green?logo=github"/></a>&nbsp;
-</p>
+    <img src="https://user-images.githubusercontent.com/13889819/89195623-03cfdc80-d577-11ea-8433-e0a4e8e03761.png">
+    <br>
+    <img src="https://img.shields.io/badge/Python-3.6+-green.svg"/>&nbsp;
+    <a href="https://github.com/m8r0wn/taser/wiki">
+        <img src="https://img.shields.io/badge/Documentation-Wiki-yellow.svg"/>
+    </a>&nbsp;
+    <a href="https://www.twitter.com/m8r0wn">
+        <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue?style=plastic&logo=twitter"/>
+    </a>&nbsp;
+    <a href="https://github.com/sponsors/m8r0wn">
+        <img src="https://img.shields.io/badge/Sponsor-GitHub-green?style=plastic&logo=github"/>
+    </a>&nbsp;
+    <a href="https://www.paypal.com/donate?hosted_button_id=68W8UCUF4SMTCn">
+        <img src="https://img.shields.io/badge/Donate-PayPal-blue?style=plastic&logo=paypal"/>
+    </a>&nbsp;
+ </p>
 
 
 ## Overview
@@ -22,7 +25,7 @@ TASER *(Testing And Security Resource)* is a Python resource library used to sim
 * Easily invoke web spiders or search engine scrapers to aid in data collection.
 * Supports rotating User-Agents and/or proxies, and custom headers per request to evade captchas.
 * Implement concurrent web requests with threading or asyncio.
-* Uses Python logging to create custom console, file, and database loggers for various output formats.
+* Uses Python logging to create custom: console, file, and database loggers for various output formats.
 * Automatically detect Windows OS to control ANSI colored output, when using the Taser custom adapter.
 
 ## Install
@@ -42,4 +45,3 @@ Find the latest documentation on the [project Wiki](https://github.com/m8r0wn/ta
 
 ## @ToDo
 * Documentation
-* Hack the Planet!
