@@ -2,13 +2,13 @@
     <img src="https://user-images.githubusercontent.com/13889819/89195623-03cfdc80-d577-11ea-8433-e0a4e8e03761.png">
     <br>
     <img src="https://img.shields.io/badge/Python-3.6+-green.svg"/>&nbsp;
-    <a href="https://github.com/m8r0wn/taser/wiki">
+    <a href="https://github.com/m8sec/taser/wiki">
         <img src="https://img.shields.io/badge/Documentation-Wiki-yellow.svg"/>
     </a>&nbsp;
-    <a href="https://www.twitter.com/m8r0wn">
-        <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue?style=plastic&logo=twitter"/>
+    <a href="https://www.twitter.com/m8sec">
+        <img src="https://img.shields.io/badge/Twitter-@m8sec-blue?style=plastic&logo=twitter"/>
     </a>&nbsp;
-    <a href="https://github.com/sponsors/m8r0wn">
+    <a href="https://github.com/sponsors/m8sec">
         <img src="https://img.shields.io/badge/Sponsor-GitHub-green?style=plastic&logo=github"/>
     </a>&nbsp;
     <a href="https://www.paypal.com/donate?hosted_button_id=68W8UCUF4SMTCn">
@@ -31,7 +31,7 @@ TASER *(Testing And Security Resource)* is a Python resource library used to sim
 ## Install
 Latest code commits:
 ```bash
-git clone https://github.com/m8r0wn/taser
+git clone https://github.com/m8sec/taser
 cd taser
 python3 setup.py install
 ```
@@ -41,7 +41,7 @@ pip3 install taser
 ```
 
 ## Getting Started
-Find the latest documentation on the [project Wiki](https://github.com/m8r0wn/taser/wiki), or checkout the [examples](examples/) folder for sample tools and usage.
+Find the latest documentation on the [project Wiki](https://github.com/m8sec/taser/wiki), or checkout the [examples](examples/) folder for sample tools and usage.
 
 ## @ToDo
 * Documentation
