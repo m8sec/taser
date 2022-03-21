@@ -38,7 +38,7 @@ pip3 install taser
 ```
 
 ## Getting Started
-Find the latest documentation on the [project Wiki](https://github.com/m8sec/taser/wiki), or checkout the [examples](examples/) folder for sample tools and usage.
+Find the latest documentation on the [project Wiki](https://github.com/m8r0wn/taser/wiki), or checkout the [examples](examples/) folder for sample tools and usage.
 
 ## @ToDo
 * Documentation
