@@ -2,13 +2,13 @@
     <img src="https://user-images.githubusercontent.com/13889819/89195623-03cfdc80-d577-11ea-8433-e0a4e8e03761.png">
     <br>
     <img src="https://img.shields.io/badge/Python-3.6+-green.svg"/>&nbsp;
-    <a href="https://github.com/m8sec/taser/wiki">
+    <a href="https://github.com/m8r0wn/taser/wiki">
         <img src="https://img.shields.io/badge/Documentation-Wiki-yellow.svg"/>
     </a>&nbsp;
-    <a href="https://www.twitter.com/m8sec">
-        <img src="https://img.shields.io/badge/Twitter-@m8sec-blue?style=plastic&logo=twitter"/>
+    <a href="https://www.twitter.com/m8r0wn">
+        <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue?style=plastic&logo=twitter"/>
     </a>&nbsp;
-    <a href="https://github.com/sponsors/m8sec">
+    <a href="https://github.com/sponsors/m8r0wn">
         <img src="https://img.shields.io/badge/Sponsor-GitHub-green?style=plastic&logo=github"/>
     </a>&nbsp;
  </p>
@@ -28,7 +28,7 @@ TASER *(Testing And Security Resource)* is a Python resource library used to sim
 ## Install
 Latest code commits:
 ```bash
-git clone https://github.com/m8sec/taser
+git clone https://github.com/m8r0wn/taser
 cd taser
 python3 setup.py install
 ```
