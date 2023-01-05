@@ -23,7 +23,7 @@ Some core features include:
 ## Install
 Get the latest (dev) code and run inside a virtual environment with Poetry:
 ```bash
-git clone https://github.com/m8r0wn/taser
+git clone https://github.com/m8sec/taser
 cd taser
 python3 -m poetry install
 python3 -m poetry shell

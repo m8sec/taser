@@ -2,7 +2,7 @@
 name = "taser"
 version = "0.4.0"
 description = ""
-authors = ["Mike Brown <m8r0wn@protonmail.com>"]
+authors = ["m8sec <>"]
 license = "BSD-3-Clause"
 
 [tool.poetry.dependencies]
