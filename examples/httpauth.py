@@ -10,7 +10,6 @@
 #
 # Usage:
 # httpauth.py -U users.txt -p Password123 -a ntlm https://example.com/ad_connect/login.aspx
-#
 import argparse
 import threading
 from time import sleep
@@ -48,9 +47,10 @@ def worker(context):
 def main(args):
     cliLogger.info("Users: {}".format(len(args.username)))
     cliLogger.info("Pass : {}".format(len(args.password)))
-    cliLogger.info("Time : {}".format(datetime.now().strftime('%m-%d-%Y %H:%M:%S')))
-    cliLogger.info("Hosts: {}\n".format(len(args.target)))
-    if input("[*] Do you want to continue (Y/n)? ") in ['n','N']:
+    cliLogger.info("Auth: {} ({})".format(args.auth.upper(), args.method.upper()))
+    cliLogger.info("Host(s): {}".format(args.target[0] if len(args.target) == 1 else len(args.target)))
+    cliLogger.info("Time : {}\n".format(datetime.now().strftime('%m-%d-%Y %H:%M:%S')))
+    if input("[*] Do you want to continue (Y/n)? ") in ['n', 'N']:
         return
 
     for t in args.target:
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     passwd = args.add_mutually_exclusive_group(required=True)
     passwd.add_argument('-p', dest='password', type=str, action='append', help='Single Password')
-    passwd.add_argument('-P', dest='password', default=False, type=lambda x: file_exists(args, x),help='Password file to spray {Pass.txt}')
+    passwd.add_argument('-P', dest='password', default=False, type=lambda x: file_exists(args, x), help='Password file to spray {Pass.txt}')
 
     proxy = args.add_mutually_exclusive_group(required=False)
     proxy.add_argument('--proxy', dest='proxy', action='append', default=[], help='Proxy requests (IP:Port)')
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     args = args.parse_args()
     args.target = ipparser(args.target[0], debug=False)
 
-    cliLogger = setup_cli_logger(spacers=[4, 40, 30, ])
+    cliLogger = setup_cli_logger(spacer=[4, 40, 30, ])
     fileLogger = setup_file_logger(args.outfile, mode='w')
     cliLogger.info(BANNER)
 

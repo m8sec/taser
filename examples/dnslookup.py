@@ -53,7 +53,7 @@ def get_zone_transfer(target, ns):
             cliLogger.write(x)
             fileLogger.info(x)
     except Exception as e:
-        logging.debug('{}@{}\t\t{}'.format(target, ns, str(e)))
+        cliLogger.fail('{}@{}\t\t{}'.format(target, ns, str(e)))
 
 
 def get_domain_nameserver(domain):
