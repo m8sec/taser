@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "taser"
+version = "0.4.0"
+description = ""
+authors = ["Mike Brown <m8r0wn@protonmail.com>"]
+license = "BSD-3-Clause"
+
+[tool.poetry.dependencies]
+python = "^3.7.0"
+beautifulsoup4 = ">=4.11.1"
+bs4 = ">=0.0.1"
+certifi = ">=2022.12.7"
+cffi = ">=1.15.1"
+charset-normalizer = ">=2.1.1"
+cryptography = ">=38.0.4"
+dnspython = ">=2.2.1"
+filelock = ">=3.9.0"
+idna = ">=3.4"
+ipparser = ">=0.3.8"
+lxml = ">=4.9.2"
+ntlm-auth = ">=1.5.0"
+pycparser = ">=2.21"
+PySocks = ">=1.7.1"
+requests = ">=2.28.1"
+requests-file = ">=1.5.1"
+requests_ntlm = ">=1.1.0"
+six = ">=1.16.0"
+soupsieve = ">=2.3.2.post1"
+tldextract = ">=3.4.0"
+urllib3 = ">=1.26.13"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

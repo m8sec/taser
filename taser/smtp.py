@@ -5,28 +5,20 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 
-def smtp_relay(from_addr, to_addr, subject, body, server, port, passwd=False, attachment=False,
-               msg_type='html', reply_to=False, tls=False):
 
-    # Attach Msg Components
+def smtp_relay(from_addr, to_addr, subject, body, server, port, passwd=False,
+              attachment=False, msg_type='html', reply_to=False, tls=False):
+    # Addressing
     msg = MIMEMultipart()
     msg['From'] = from_addr
     msg['To'] = to_addr
+    msg['Reply-to'] = reply_to if reply_to else to_addr
 
-    if reply_to:
-        msg['Reply-to'] = reply_to
-    else:
-        msg['Reply-to'] = from_addr
-
+    # Construct subject / body
     msg['Subject'] = subject
+    msg.attach(MIMEText(body, 'html')) if msg_type in ['plain', 'txt'] else msg.attach(MIMEText(body, 'plain'))
 
-    # Attach Body
-    if msg_type in ['plain', 'txt']:
-        msg.attach(MIMEText(body, 'plain'))
-    else:
-        msg.attach(MIMEText(body, 'html'))
-
-    # Add attachment to msg
+    # Handle attachments
     if attachment:
         attach_file = open(attachment, "rb")
         p = MIMEBase('application', 'octet-stream')
@@ -35,7 +27,7 @@ def smtp_relay(from_addr, to_addr, subject, body, server, port, passwd=False, at
         p.add_header('Content-Disposition', "attachment; filename= {}".format(attachment))
         msg.attach(p)
 
-    #Send message
+    # Define server & auth
     socket.setdefaulttimeout(15)
     s = smtplib.SMTP(server, port)
     if tls:
@@ -44,7 +36,7 @@ def smtp_relay(from_addr, to_addr, subject, body, server, port, passwd=False, at
         s.login(from_addr, passwd)
     text = msg.as_string()
 
-    # Send Mail and close
+    # Send
     s.sendmail(from_addr, to_addr, text)
     s.quit()
     return True

@@ -32,3 +32,4 @@ venv/
 # custom
 docs/
 dev/
+examples/dev/

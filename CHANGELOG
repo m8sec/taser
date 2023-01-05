@@ -1,3 +1,5 @@
+[0.3.4] 2021-10
+
 [0.3.3] 2021-04
 - Add proxy and header options to jsearch example
 - Jitter option in http WebSearch class

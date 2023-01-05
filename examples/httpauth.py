@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
-# Author: @m8r0wn
+# Author: @m8sec
+# License: BSD 3-Clause
 #
+# Description:
 # HTTP brute force tool, using python requests under the hood, to simplify the process
-# of brute forcing sites with the "Authorization" HTTP request header. This will NOT
-# add POST data to the request or check anything but HTTP response status codes for valid results.
+# of brute forcing sites with the "Authorization" HTTP request header.
 #
+# This will NOT add POST data to the request or check anything but HTTP response status codes for valid results.
+#
+# Usage:
 # httpauth.py -U users.txt -p Password123 -a ntlm https://example.com/ad_connect/login.aspx
-
+#
 import argparse
 import threading
 from time import sleep
-from sys import argv,exit
+from sys import argv, exit
 from ipparser import ipparser
 from datetime import datetime
 from urllib3 import disable_warnings, exceptions
-disable_warnings(exceptions.InsecureRequestWarning)
 
 from taser.version import BANNER
 from taser.printx import highlight
 from taser.utils import file_exists, get_timestamp
-from taser.proto.http import web_request, auth_handler
-from taser.logx import setup_fileLogger, setup_consoleLogger
+from taser.http import web_request, auth_handler
+from taser.logx import setup_file_logger, setup_cli_logger
+
+disable_warnings(exceptions.InsecureRequestWarning)
+
 
 def worker(context):
     code = 0
@@ -37,6 +43,7 @@ def worker(context):
         cliLogger.fail("{:<35} {:<30} {:<24} (Code: {} | Size: {}))".format(context.user, context.password, highlight('Failed', fg='red'), code, size))
     fileLogger.info("{}\t{}\t{}\t{}\t{}".format(get_timestamp(), context.target, code, context.user, context.password))
     sleep(context.jitter)
+
 
 def main(args):
     cliLogger.info("Users: {}".format(len(args.username)))
@@ -67,6 +74,7 @@ def main(args):
     while threading.active_count() > 1:
         sleep(0.05)
 
+
 if __name__ == '__main__':
     args = argparse.ArgumentParser(description="\t\t{0}".format(argv[0]), formatter_class=argparse.RawTextHelpFormatter, usage=argparse.SUPPRESS)
     user = args.add_mutually_exclusive_group(required=True)
@@ -94,8 +102,8 @@ if __name__ == '__main__':
     args = args.parse_args()
     args.target = ipparser(args.target[0], debug=False)
 
-    cliLogger = setup_consoleLogger(spacers=[40, 30, ])
-    fileLogger = setup_fileLogger(args.outfile, mode='w')
+    cliLogger = setup_cli_logger(spacers=[4, 40, 30, ])
+    fileLogger = setup_file_logger(args.outfile, mode='w')
     cliLogger.info(BANNER)
 
     try:

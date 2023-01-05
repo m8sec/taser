@@ -1,23 +1,31 @@
 import ssl
 import socket
+import logging
 
-class PySocks3():
-    '''
-    Limited implementation of the Sockets library with
-    Python3 support for SSL, Encoding and Decoding.
-    '''
-    def connect(self, target, port, SSL=False, timeout=3, ssl_version=ssl.PROTOCOL_SSLv23, address_family=socket.AF_INET, socket_type=socket.SOCK_STREAM):
-        self.settimeout(timeout)
-        self.sock = socket.socket(address_family, socket_type)
-        if SSL:
-            try:
-                self.sock = ssl.wrap_socket(self.sock, keyfile=None, certfile=None, server_side=False, cert_reqs=ssl.CERT_NONE, ssl_version=ssl_version)
-            except:
-                self.sock = ssl.wrap_socket(self.sock, keyfile=None, certfile=None, server_side=False, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_TLSv1_2)
+
+class PySocks3:
+    # Helper class for encoding/decoding in Python3's socket
+    # implementation. Also supports SSL wrapped sockets.
+    def __init__(self):
+        self.sock = False
+
+    def connect(self, target, port, timeout=3, use_ssl=False, ssl_version=False):
+        self.set_timeout(timeout)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((target, int(port)))
+
+        if use_ssl and ssl_version:
+            set_ssl_version(ssl_version)
+
+        elif use_ssl:
+            ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            self.sock = ctx.wrap_socket(s)
         return self
 
-    def settimeout(self, timeout):
+    def set_ssl_version(self, ssl_version):
+        self.sock = ssl.wrap_socket(self.sock, keyfile=None, certfile=None, server_side=False, cert_reqs=ssl.CERT_NONE, ssl_version=ssl_version)
+
+    def set_timeout(self, timeout):
         socket.setdefaulttimeout(timeout)
 
     def close(self):
@@ -53,13 +61,14 @@ class PySocks3():
         except:
             return data.decode('utf-8').rstrip('\n')
 
-def get_banner(target, port, ssl=False, timeout=3):
+
+def get_banner(target, port, timeout=3, use_ssl=False):
     banner = False
     try:
-        s = PySocks3().connect(target, port, SSL=ssl, timeout=timeout)
+        s = PySocks3().connect(target, port, timeout=timeout, use_ssl=use_ssl)
         banner = s.recv().strip()
         banner = banner.strip("\n")
         s.close()
-    except:
-        return False
+    except Exception as e:
+        logging.debug("TCP:Get_Banner::{}".format(e))
     return banner

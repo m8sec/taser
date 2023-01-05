@@ -5,13 +5,12 @@ with open("README.md", "r") as fh:
 
 setup(
     name='taser',
-    version='0.3.3',
-    author = 'm8r0wn',
-    author_email = 'm8r0wn@protonmail.com',
-    description = 'Security testing resource library',
+    version='0.4.0',
+    author='m8sec',
+    description='Security Resource library',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://github.com/m8r0wn/taser',
+    url='https://github.com/m8sec/taser',
     license='BSD 3-clause',
     include_package_data=True,
     packages=find_packages(include=[

@@ -1,6 +1,7 @@
 # TESTING ONLY
 import sys
 sys.path.append('..')
+###
 
 from time import sleep
 from taser.proto.http import web_request
@@ -16,7 +17,7 @@ proxies = [
 
 for x in range(0,3):
     print('\nSending Request')
-    r = web_request(target, proxies=proxies, headers={'X-Forwarded-For':'127.0.0.1'}, max_retries=1, timeout=3, debug=True)
+    r = web_request(target, proxies=proxies, headers={'X-Forwarded-For':'127.0.0.1'}, max_retries=1, timeout=3)
     if r:
         print(r.text)
     else:

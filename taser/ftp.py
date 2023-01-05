@@ -1,6 +1,6 @@
 import ftplib
 
-class FTP():
+class FTP:
     @staticmethod
     def login(target, port, username, password, time_out, ssl=False, verbose=False):
         try:
@@ -16,7 +16,7 @@ class FTP():
         return False
 
     @staticmethod
-    def enumDir(ftp_con, dir=False):
+    def list_dir(ftp_con, dir=False):
         data = []
         ftp_con.set_pasv(True)
         if dir:

@@ -1,47 +1,36 @@
+# Taser
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/13889819/89195623-03cfdc80-d577-11ea-8433-e0a4e8e03761.png">
-    <br>
-    <img src="https://img.shields.io/badge/Python-3.6+-green.svg"/>&nbsp;
-    <a href="https://github.com/m8r0wn/taser/wiki">
-        <img src="https://img.shields.io/badge/Documentation-Wiki-yellow.svg"/>
+    <a href="https://www.twitter.com/m8sec">
+        <img src="https://img.shields.io/badge/Twitter-@m8sec-blue?style=plastic&logo=twitter"/>
     </a>&nbsp;
-    <a href="https://www.twitter.com/m8r0wn">
-        <img src="https://img.shields.io/badge/Twitter-@m8r0wn-blue?style=plastic&logo=twitter"/>
+    <a href="/LICENSE">
+        <img src="https://img.shields.io/badge/License-BSD_3--Clause-green?style=plastic&logo=github"/>
     </a>&nbsp;
-    <a href="https://github.com/sponsors/m8r0wn">
-        <img src="https://img.shields.io/badge/Sponsor-GitHub-green?style=plastic&logo=github"/>
-    </a>&nbsp;
-    <a href="https://www.paypal.com/donate?hosted_button_id=68W8UCUF4SMTCn">
-        <img src="https://img.shields.io/badge/Donate-PayPal-blue?style=plastic&logo=paypal"/>
+    <a href="https://github.com/sponsors/m8sec">
+        <img src="https://img.shields.io/badge/Sponsor-GitHub-red?style=plastic&logo=github"/>
     </a>&nbsp;
  </p>
 
+TASER *(Testing and Security Resource)* is an abstraction library used to simplify the process of creating offensive security tooling - especially those relating to web or external assessments. It's modular design makes it easy to customize and re-purposed in a variety of scenarios. 
 
-## Overview
-TASER *(Testing And Security Resource)* is a Python resource library used to simplify the process of creating offensive security tooling, especially those relating to web or external assessments. It's modular design makes it easy for code to be customized and re-purposed in a variety of scenarios. 
+Some core features include:
+* Built-in spider class to modify and aid in data collection.
+* Rotate User-Agents, proxies, and custom headers per request.
+* Automatically detect Windows OS to control ANSI colored output.
 
-#### Key features
-
-* Easily invoke web spiders or search engine scrapers to aid in data collection.
-* Supports rotating User-Agents and/or proxies, and custom headers per request to evade captchas.
-* Implement concurrent web requests with threading or asyncio.
-* Uses Python logging to create custom: console, file, and database loggers for various output formats.
-* Automatically detect Windows OS to control ANSI colored output, when using the Taser custom adapter.
+> :warning: This is a working library and breaking changes may be made. See the [/examples](/examples) directory for usage
 
 ## Install
-Latest code commits:
+Get the latest (dev) code and run inside a virtual environment with Poetry:
 ```bash
 git clone https://github.com/m8r0wn/taser
 cd taser
+python3 -m poetry install
+python3 -m poetry shell
 python3 setup.py install
 ```
-Last release:
+
+Install the last stable release directly from PyPi:
 ```bash
 pip3 install taser
 ```
-
-## Getting Started
-Find the latest documentation on the [project Wiki](https://github.com/m8r0wn/taser/wiki), or checkout the [examples](examples/) folder for sample tools and usage.
-
-## @ToDo
-* Documentation
