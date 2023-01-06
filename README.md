@@ -14,7 +14,7 @@
 
 TASER *(Testing and Security Resource)* is an abstraction library used to simplify the process of creating offensive security tooling. The various protocols and classes help streamline development of custom tooling during engagements.
 
-While the taser library is mainly for personal use. The [examples](/examples) directory contains a number of scripts that may be helpful to other penetration testers, red teamers, and bug bounty hunters!
+While the taser library is mainly for personal use, the [examples](/examples) directory contains a number of scripts that may be helpful to other penetration testers, red teamers, and bug bounty hunters!
 
 
 ## Core Features
