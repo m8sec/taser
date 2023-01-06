@@ -4,3 +4,6 @@
 * ```httpauth.py``` - Script to perform HTTP Brute force through Authorization request header. Supports `Basic`, `NTLM`, & `Digest` auth methods.
 * ```serviceProbe.py``` - Takes in list of targets and probes for HTTP(S) and TCP services.
 * ```webspider.py``` - Extension of Taser's Spider class to extract emails, subdomains, comments, external resources, & more.
+* ```dns_brute.py``` - Script to perform DNS brute forcing. Add `FUZZ` keyword in target to change standard injection point and aid in additional discovery.
+
+

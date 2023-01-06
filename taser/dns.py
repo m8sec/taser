@@ -9,11 +9,11 @@ from taser.utils import ipcheck
 
 class DNSutils:
     @staticmethod
-    def dns_lookup(host, dns_lookup, nameserver=[]):
+    def dns_lookup(host, dns_lookup, nameserver=[], timeout=3):
         # Lookups = ['A','NS','MX','TXT','CNAME','HINFO','PTR','SOA','SPF','SRV','RP']
         results = []
         res = dns.resolver.Resolver()
-        res.timeout = 3
+        res.timeout = timeout
         res.lifetime = 3
         if nameserver:
             res.nameservers = nameserver
