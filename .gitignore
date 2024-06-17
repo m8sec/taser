@@ -1,0 +1,36 @@
+impacket/*
+develop-eggs/
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+Pipfile
+
+# Byte-compiled
+__pycache__/
+*.py[cod]
+
+# macOS
+.DS_Store
+
+# IDE
+.idea
+venv/
+.vscode
+
+# custom
+docs/
+*.txt
+examples/
