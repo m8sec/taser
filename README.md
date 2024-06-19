@@ -4,8 +4,6 @@
     &nbsp;    
     <a href="/LICENSE"><img src="https://img.shields.io/badge/License-BSD_3--Clause-green?style=plastic&logo=github"/></a>
     &nbsp;
-    <a href="https://github.com/sponsors/m8sec"><img src="https://img.shields.io/badge/Sponsor-GitHub-red?style=plastic&logo=github"/></a>
-    &nbsp;
  </p>
 
 
