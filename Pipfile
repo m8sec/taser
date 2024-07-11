@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+dnspython = "*"
+cryptography = "*"
+ipparser = ">=1.0.0"
+bs4 = "*"
+lxml = "*"
+requests = "*"
+ntlm-auth = "*"
+tldextract = "*"
+requests-file = "*"
+requests-ntlm = "*"
+beautifulsoup4 = "*"
+selenium = "*"
+webdriver-manager = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"

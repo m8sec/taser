@@ -1,0 +1,14 @@
+dnspython
+cryptography
+ipparser>=1.0.0
+
+# HTTP
+bs4
+lxml
+selenium
+requests
+ntlm-auth
+tldextract
+requests-file
+requests-ntlm
+beautifulsoup4
