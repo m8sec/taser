@@ -9,60 +9,64 @@ class PySocks3:
     def __init__(self):
         self.sock = False
 
-    def connect(self, target, port, timeout=3, use_ssl=False):
-        self.set_timeout(timeout)
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((target, int(port)))
-        if use_ssl:
-            ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            ctx.check_hostname = False
-            ctx.verify_mode = ssl.CERT_NONE
-            self.sock = ctx.wrap_socket(self.sock, server_hostname=target, do_handshake_on_connect=True)
-        return self
+    def connect(self, target, port, timeout=3, use_ssl=False, raise_errors=False):
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.settimeout(timeout)
+            self.sock.connect((target, int(port)))
+            if use_ssl:
+                ctx = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+                self.sock = ctx.wrap_socket(self.sock, server_hostname=target, do_handshake_on_connect=True)
+            return self
+        except Exception:
+            self.close()
+            if raise_errors:
+                raise
+            return self
 
     def set_timeout(self, timeout):
-        socket.setdefaulttimeout(timeout)
+        if self.sock:
+            self.sock.settimeout(timeout)
 
     def close(self):
-        self.sock.close()
-        del self.sock
+        if self.sock:
+            self.sock.close()
+            self.sock = False
 
-    def send(self, msg, max_retries=1):
+    def send(self, msg):
         try:
             self.sock.sendall(msg.encode('utf-8'))
-        except socket.error as e:
-            if max_retries > 0:
-                return self.resend(msg, max_retries)
+        except Exception:
+            return False
         return True
 
-    def resend(self, msg, max_retries):
-        retry = 0
-        while retry < max_retries:
-            x = self.resend(self.sock, msg, 0)
-            if x:
-                return True
-            retry += 1
-        return False
-
-    def recv(self, buff_size=2048):
+    def recv(self, buff_size=2048, raise_errors=False):
         data = b''
         try:
             while True:
                 new = self.sock.recv(buff_size)
                 data += new
-                if len(str(new)) < buff_size:
+                if not new or len(new) < buff_size:
                     return data.decode('utf-8').rstrip('\n')
-        except:
+        except Exception:
+            if raise_errors:
+                raise
             return data.decode('utf-8').rstrip('\n')
 
 
-def get_banner(target, port, timeout=3, use_ssl=False):
+def get_banner(target, port, timeout=3, use_ssl=False, raise_errors=False):
     banner = False
     try:
-        s = PySocks3().connect(target, port, timeout=timeout, use_ssl=use_ssl)
-        banner = s.recv().strip()
+        s = PySocks3().connect(target, port, timeout=timeout, use_ssl=use_ssl, raise_errors=raise_errors)
+        if not s.sock:
+            return banner
+        banner = s.recv(raise_errors=raise_errors).strip()
         banner = banner.strip("\n")
         s.close()
     except Exception as e:
         LOG.debug("TCP:Get_Banner::{}".format(e))
+        if raise_errors:
+            raise
     return banner

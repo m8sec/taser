@@ -4,7 +4,7 @@
 # Source: https://github.com/m8sec/taser
 # License: BSD 3-Clause License
 #
-# Copyright (c) 2024, m8sec
+# Copyright (c) 2026, m8sec
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -46,4 +46,11 @@ except importlib.metadata.PackageNotFoundError:
     VERSION = ""
 
 AUTHOR = 'm8sec'
-BANNER = "TASER v{} - {}    {}\n".format(VERSION, argv[0].split("/")[-1], highlight_a(f'#~{AUTHOR}', fg='gray'))
+
+
+def build_banner(cmd_name=None):
+    cmd_name = cmd_name or argv[0].split("/")[-1]
+    return "TASER v{} - {}    {}\n".format(VERSION, cmd_name, highlight_a(f'#~{AUTHOR}', fg='gray'))
+
+
+BANNER = build_banner()

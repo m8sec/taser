@@ -1,5 +1,6 @@
 import socket
 import smtplib
+from os import path
 from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
@@ -7,7 +8,9 @@ from email.mime.multipart import MIMEMultipart
 
 
 def smtp_relay(from_addr, to_addr, subject, body, server, port, passwd=False,
-              attachment=False, msg_type='html', reply_to=False, tls=False, headers={}):
+              attachment=False, msg_type='html', reply_to=False, tls=False, headers=None, timeout=15,
+              raise_errors=False):
+    headers = headers or {}
     # Addressing
     msg = MIMEMultipart()
     msg['From'] = from_addr
@@ -16,29 +19,31 @@ def smtp_relay(from_addr, to_addr, subject, body, server, port, passwd=False,
 
     # Construct subject / body
     msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'html')) if msg_type in ['plain', 'txt'] else msg.attach(MIMEText(body, 'plain'))
+    subtype = 'plain' if msg_type in ['plain', 'txt'] else 'html'
+    msg.attach(MIMEText(body, subtype))
 
     # Handle attachments
     if attachment:
-        attach_file = open(attachment, "rb")
-        p = MIMEBase('application', 'octet-stream')
-        p.set_payload((attach_file).read())
-        encoders.encode_base64(p)
-        p.add_header('Content-Disposition', "attachment; filename= {}".format(attachment))
-        for k, v in headers.items():
-            p.add_header(k, v)
-        msg.attach(p)
+        with open(attachment, "rb") as attach_file:
+            p = MIMEBase('application', 'octet-stream')
+            p.set_payload(attach_file.read())
+            encoders.encode_base64(p)
+            p.add_header('Content-Disposition', "attachment; filename= {}".format(path.basename(attachment)))
+            for k, v in headers.items():
+                p.add_header(k, v)
+            msg.attach(p)
 
     # Define server & auth
-    socket.setdefaulttimeout(15)
-    s = smtplib.SMTP(server, port)
-    if tls:
-        s.starttls()
-    if passwd:
-        s.login(from_addr, passwd)
-    text = msg.as_string()
-
-    # Send
-    s.sendmail(from_addr, to_addr, text)
-    s.quit()
+    socket.setdefaulttimeout(timeout)
+    try:
+        with smtplib.SMTP(server, port) as smtp_client:
+            if tls:
+                smtp_client.starttls()
+            if passwd:
+                smtp_client.login(from_addr, passwd)
+            smtp_client.sendmail(from_addr, to_addr, msg.as_string())
+    except Exception:
+        if raise_errors:
+            raise
+        return False
     return True

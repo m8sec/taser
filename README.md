@@ -9,7 +9,7 @@
 
 TASER *(Testing and Security Resource)* is an abstraction library used to simplify the process of creating offensive security tooling. The various protocols and classes help streamline development of custom tooling during engagements.
 
-The [examples](/examples) directory contains a number of scripts demonstrating usage and helpful tools for penetration testers, red teamers, and bug bounty hunters!
+The canonical packaged scripts live under `taser.exp` and can be run with `python -m taser.exp.<module>`. The `examples/` directory contains thin wrappers for compatibility and discoverability.
 
 > ⚠ Warning: Taser is a working library and breaking changes may be made.
 
@@ -20,7 +20,7 @@ Get the latest code (virtual environment recommended):
 ```bash
 git clone https://github.com/m8sec/taser
 cd taser
-python3 setup.py install
+pip install .
 ```
 
 
@@ -30,11 +30,28 @@ Install the last stable release directly from PyPi:
 pip3 install taser
 ```
 
+Optional extras:
+
+- `pip install .[browser]` for Selenium-backed browser and screenshot support
+- `pip install .[exp]` for additional experiment/script dependencies
+
 
 ### Troubleshooting
-Depending on your setup & install method, you may receive an error messages when running `setup.py`. Below are a few solutions:
-1. Install taser from PyPi `pip3 install taser`
-2. Install from git repo using `pip3 install -r requirements.txt`
+Depending on your setup and install method, you may receive dependency errors. Common options:
+
+1. Install taser from PyPI: `pip3 install taser`
+2. Install from the repo: `pip3 install -r requirements.txt && pip3 install .`
+
+
+## Packaged scripts
+Run packaged scripts as modules:
+
+```bash
+python -m taser.exp.serviceProbe 10.0.0.0/24 -p 80,443
+python -m taser.exp.serviceProbe hosts.txt --screenshot
+python -m taser.exp.serviceProbe hosts.txt --screenshot ./screenshots --browser firefox
+python -m taser.exp.webProbe hosts.txt --screenshot
+```
 
 
 ## Disclaimer

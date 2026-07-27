@@ -1,14 +1,17 @@
-dnspython
+# Core library dependencies
+beautifulsoup4
 cryptography
+dnspython
 ipparser>=1.0.0
-
-# HTTP
-bs4
 lxml
-selenium
-requests
 ntlm-auth
-tldextract
+requests
 requests-file
 requests-ntlm
-beautifulsoup4
+
+# Browser-backed features
+selenium
+
+# Experiment and utility scripts
+pyopenssl
+scapy

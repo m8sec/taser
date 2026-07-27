@@ -36,9 +36,9 @@ BG = {'none': '',
 # Custom log adapter
 ############################
 class TaserAdapter(logging.LoggerAdapter):
-    def __init__(self, logger_name='taser_cli', spacer=[]):
+    def __init__(self, logger_name='taser_cli', spacer=None):
         self.logger = logging.getLogger(logger_name)
-        self.setFormat(spacer)
+        self.setFormat(spacer or [])
         self._windows = True if os.name == 'nt' else False
 
     def setFormat(self, spacers):
@@ -60,7 +60,7 @@ class TaserAdapter(logging.LoggerAdapter):
         if not bullet:
             return msg, kwargs
         b = highlight(bullet.strip(), fg, style, bg='none', windows=self._windows)
-        if type(msg) == list:
+        if isinstance(msg, list):
             msg.insert(0, b)
             msg = self.msg_spacing(msg)
         else:
@@ -117,29 +117,40 @@ def bullet(data, bullet='[*] ', bullet_fg='blue', bullet_style='bold', bullet_bg
 ############################
 # Setup logger support
 ############################
-def setup_cli_logger(log_level=logging.INFO, logger_name='taser_cli', auto_adapter=True, spacer=[]):
+def _reset_handlers(logger):
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
+        try:
+            handler.close()
+        except Exception:
+            pass
+
+
+def setup_cli_logger(log_level=logging.INFO, logger_name='taser_cli', auto_adapter=True, spacer=None):
     formatter = logging.Formatter('%(message)s')
-    StreamHandler = logging.StreamHandler(stdout)
-    StreamHandler.setFormatter(formatter)
+    stream_handler = logging.StreamHandler(stdout)
+    stream_handler.setFormatter(formatter)
 
     logger = logging.getLogger(logger_name)
     logger.propagate = False
-    logger.addHandler(StreamHandler)
+    _reset_handlers(logger)
+    logger.addHandler(stream_handler)
 
     logger.setLevel(log_level)
-    return TaserAdapter(logger_name=logger_name, spacer=spacer) if auto_adapter else logger
+    return TaserAdapter(logger_name=logger_name, spacer=spacer or []) if auto_adapter else logger
 
 
 def setup_file_logger(filename, mode='w', log_level=logging.INFO, logger_name='taser_file'):
     formatter = logging.Formatter('%(message)s')
     if filename:
-        fileHandler = logging.FileHandler(filename, mode=mode)
-        fileHandler.setFormatter(formatter)
+        file_handler = logging.FileHandler(filename, mode=mode)
+        file_handler.setFormatter(formatter)
     else:
-        fileHandler = logging.NullHandler()
+        file_handler = logging.NullHandler()
     logger = logging.getLogger(logger_name)
     logger.propagate = False
-    logger.addHandler(fileHandler)
+    _reset_handlers(logger)
+    logger.addHandler(file_handler)
     logger.setLevel(log_level)
     return logger
 
@@ -147,11 +158,12 @@ def setup_file_logger(filename, mode='w', log_level=logging.INFO, logger_name='t
 def setup_debug_logger():
     debug_output_string = "[Debug] %(message)s"
     formatter = logging.Formatter(debug_output_string)
-    streamHandler = logging.StreamHandler(stdout)
-    streamHandler.setFormatter(formatter)
+    stream_handler = logging.StreamHandler(stdout)
+    stream_handler.setFormatter(formatter)
     root_logger = logging.getLogger()
     root_logger.propagate = False
-    root_logger.addHandler(streamHandler)
+    _reset_handlers(root_logger)
+    root_logger.addHandler(stream_handler)
     root_logger.setLevel(logging.DEBUG)
     return root_logger
 

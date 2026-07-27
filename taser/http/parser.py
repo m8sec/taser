@@ -1,14 +1,39 @@
+from dataclasses import dataclass
 from argparse import Namespace
-from tldextract import extract
-from urllib.parse import urlparse
-from taser.utils import ipcheck
+from urllib.parse import parse_qs, urlparse
+from taser.utils import ipv4check
+
+
+@dataclass(frozen=True)
+class ParsedURL:
+    domain: str
+    subdomain: str
+    path: str
+    page: str
+    dir: str
+    params: str
+    proto: str
+    tag: str
+    extension: str
+    port: int
 
 
 class URLParser:
+    MULTI_PART_TLDS = [
+        "co.uk", "org.uk", "gov.uk", "ac.uk",
+        "com.au", "net.au", "org.au",
+        "co.nz", "net.nz", "org.nz",
+    ]
+
     @classmethod
     def read(cls, data):
+        parsed = cls.read_structured(data)
+        return Namespace(**parsed.__dict__)
+
+    @classmethod
+    def read_structured(cls, data):
         p = urlparse(data)
-        return Namespace(
+        return ParsedURL(
             domain=cls.extract_webdomain(data),
             subdomain=p.netloc,
             path=cls.extract_path(data),
@@ -18,14 +43,23 @@ class URLParser:
             proto=p.scheme,
             tag=p.fragment,
             extension=cls.extract_extension(data),
-            port=cls.extract_port(data)
+            port=cls.extract_port(data),
         )
 
     @staticmethod
     def extract_webdomain(url):
-        # test.example.com --> example.com
-        x = extract(url)
-        return x.domain if ipcheck(x.domain) else '.'.join([x.domain, x.suffix])
+        # Extract the netloc part of the URL
+        netloc = urlparse(url).netloc
+        if ':' in netloc:
+            netloc = netloc.split(':')[0]
+
+        if ipv4check(netloc):
+            return netloc
+
+        parts = netloc.split('.')
+        if len(parts) > 2 and '.'.join(parts[-2:]) in URLParser.MULTI_PART_TLDS:
+            return '.'.join(parts[-3:])
+        return '.'.join(parts[-2:])
 
     @staticmethod
     def extract_subdomain(url):
@@ -75,8 +109,13 @@ class URLParser:
     @classmethod
     def extract_dir(cls, url):
         # https://test.com/admin/login.php --> /admin/
-        p = cls.extract_path(url).split('/')
-        return '/'.join(p[:-1])
+        path_value = cls.extract_path(url)
+        if path_value == '/':
+            return '/'
+        if path_value.endswith('/'):
+            return path_value
+        split_path = path_value.rsplit('/', 1)[0]
+        return split_path if split_path.startswith('/') else f'/{split_path}'
 
     @staticmethod
     def remove_page(url):
@@ -95,8 +134,12 @@ class URLParser:
     def rm_base_url(url):
         # https://test.com/admin?abc=1 --> /admin?abc=1
         parsed_url = urlparse(url)
-        path_query_fragment = parsed_url.path + parsed_url.query + parsed_url.fragment
-        return path_query_fragment if path_query_fragment else '/'
+        path = parsed_url.path or '/'
+        if parsed_url.query:
+            path += '?' + parsed_url.query
+        if parsed_url.fragment:
+            path += '#' + parsed_url.fragment
+        return path
 
     @staticmethod
     def url_format(url):
@@ -113,40 +156,138 @@ class URLParser:
 
 
 class RequestParser:
-    # Take in raw request and format (work in progress)
+    """
+    Parse a raw HTTP request string into structured fields.
+
+    Existing attributes such as ``method``, ``page``, ``headers``, ``data``,
+    and ``url`` are preserved for compatibility. Additional derived attributes
+    are populated to make the parser useful as a general request abstraction.
+    """
+
     def __init__(self, raw_request, protocol='https'):
-        self.raw = raw_request
+        self.raw = self._normalize_raw_request(raw_request)
         self.protocol = protocol
 
+        self.is_valid = False
+        self.error = ''
+
         self.method = ''
+        self.target = ''
         self.page = ''
         self.raw_version = ''
         self.http_version = ''
         self.headers = {}
+        self.header_items = []
         self.data = ''
+        self.body = ''
+        self.host = ''
+        self.port = None
+        self.scheme = protocol
+        self.path = ''
+        self.query = ''
+        self.query_params = {}
+        self.fragment = ''
+        self.base_url = ''
+        self.content_length = 0
 
         self.parse()
+        self.url = self.build_url()
 
-        try:
-            self.url = self.protocol + '://' + self.headers['Host'] + self.page
-        except Exception as e:
-            self.url = ''
+    @staticmethod
+    def _normalize_raw_request(raw_request):
+        if isinstance(raw_request, bytes):
+            raw_request = raw_request.decode('iso-8859-1', errors='replace')
+        return str(raw_request).replace('\r\n', '\n').replace('\r', '\n')
+
+    @staticmethod
+    def _split_header_line(line):
+        key, sep, value = line.partition(':')
+        if not key or not sep:
+            return '', ''
+        return key.strip(), value.strip()
+
+    def get_header(self, key, default=''):
+        return self.headers.get(key, default)
+
+    def build_url(self):
+        if not self.is_valid:
+            return ''
+
+        if self.target.lower().startswith(('http://', 'https://')):
+            return self.target
+
+        if not self.host:
+            return ''
+
+        return f'{self.scheme}://{self.host}{self.page}'
+
+    def _parse_target(self):
+        parsed = urlparse(self.target)
+
+        if self.target.lower().startswith(('http://', 'https://')):
+            self.scheme = parsed.scheme or self.protocol
+            self.host = parsed.netloc
+            self.path = parsed.path or '/'
+            self.query = parsed.query
+            self.fragment = parsed.fragment
+            self.page = self.path
+        else:
+            self.scheme = self.protocol
+            self.host = self.get_header('Host', '')
+            self.path = parsed.path or self.target or '/'
+            self.query = parsed.query
+            self.fragment = parsed.fragment
+            self.page = self.path
+
+        if self.query:
+            self.page = f'{self.page}?{self.query}'
+        if self.fragment:
+            self.page = f'{self.page}#{self.fragment}'
+
+        self.query_params = parse_qs(self.query, keep_blank_values=True) if self.query else {}
+        self.base_url = f'{self.scheme}://{self.host}' if self.host else ''
+
+        if self.host:
+            host_parsed = urlparse(f'{self.scheme}://{self.host}')
+            self.port = host_parsed.port or (443 if self.scheme == 'https' else 80)
 
     def parse(self):
-        blank_line = False
         raw_input = self.raw.splitlines()
+        if not raw_input:
+            self.error = 'Empty request'
+            return
 
-        self.method, self.page, self.raw_version = raw_input[0].split(' ')
+        request_line = raw_input[0].strip().split(maxsplit=2)
+        if len(request_line) != 3:
+            self.error = 'Invalid request line'
+            return
+        self.method, self.target, self.raw_version = request_line
         self.http_version = self.raw_version.split('/')[-1]
 
-        for line in raw_input[1:]:
-            if line:
-                if blank_line:
-                    self.data += line
-                    return
+        body_lines = []
+        in_body = False
 
-                else:
-                    k, v = line.strip().split(': ')
-                    self.headers[k] = v
-            else:
-                blank_line = True
+        for line in raw_input[1:]:
+            if in_body:
+                body_lines.append(line)
+                continue
+
+            if line == '':
+                in_body = True
+                continue
+
+            key, value = self._split_header_line(line)
+            if key:
+                self.headers[key] = value
+                self.header_items.append((key, value))
+
+        self.data = '\n'.join(body_lines)
+        self.body = self.data
+        self._parse_target()
+
+        try:
+            self.content_length = int(self.get_header('Content-Length', '0') or 0)
+        except ValueError:
+            self.content_length = 0
+
+        self.is_valid = True

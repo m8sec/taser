@@ -20,7 +20,7 @@ from datetime import datetime, timedelta
 ################################
 class Timeout(threading.Thread):
     def __init__(self, timeout):
-        threading.Thread.__init__(self)
+        super().__init__()
         self.timeout = timeout
         self.start_time = datetime.now()
         self.running = True
@@ -39,17 +39,15 @@ class Timeout(threading.Thread):
 # File Utils
 ################################
 def file_read_lines(file):
-    return [line.strip() for line in open(file)]
+    with open(file, encoding='utf-8') as handle:
+        return [line.strip() for line in handle]
 
 
 def file_exists(parser, filename, contents=True):
     # Argparse support for accepting & validating files
     if not path.exists(filename):
         parser.error("Input file not found: {}".format(filename))
-    if contents:
-        return file_read_lines(filename)
-    else:
-        return filename
+    return file_read_lines(filename) if contents else filename
 
 
 def file_collision_check(filename, ext=''):
@@ -58,13 +56,15 @@ def file_collision_check(filename, ext=''):
     file_path = path.dirname(filename)
     base_file = remove_special(path.basename(filename))
 
-    if ipcheck(base_file):
+    # handle ipv4/domain names in filename
+    if ipv4check(base_file):
         filename = base_file
     else:
         split_name = base_file.split('.')
         filename = split_name[0]
         ext = split_name[-1] if len(split_name) > 1 and not split_name[-1].endswith(('com', 'net', 'org', 'me')) else ext
 
+    # Iterate to amend filename if duplicates found
     tmp = path.join(file_path, f'{filename}.{ext}')
     while path.exists(tmp):
         count += 1
@@ -86,6 +86,16 @@ def remove_special(value):
 ################################
 def delimiter2list(value, delim=","):
     return [x.strip() for x in value.split(delim)] if value else []
+
+
+def unique_values(values):
+    seen = set()
+    ordered = []
+    for value in values:
+        if value not in seen:
+            seen.add(value)
+            ordered.append(value)
+    return ordered
 
 
 def delimiter2dict(value, delim_one=";", delim_two=":"):
@@ -115,8 +125,11 @@ def val2list(value, delimiter=","):
     if not value:
         return tmp
     for v in value.split(delimiter):
-        tmp += [line.strip() for line in open(v)] if path.exists(v) and v.endswith('.txt') else [v]
-    return list(set(tmp))
+        if path.exists(v) and v.endswith('.txt'):
+            tmp.extend(file_read_lines(v))
+        else:
+            tmp.append(v)
+    return unique_values(tmp)
 
 
 ################################
@@ -132,7 +145,7 @@ def get_filestamp():
 
 
 def gen_random_string(length=6):
-    return''.join([choice(ascii_letters + digits) for x in range(length)])
+    return ''.join(choice(ascii_letters + digits) for _ in range(length))
 
 
 def percent_complete(item, item_list, decimal=1):
@@ -143,19 +156,30 @@ def percent_complete(item, item_list, decimal=1):
 ################################
 # Regex Validations
 ################################
-def ipcheck(data):
+def ipv4check(data):
     # Check if string contains an IP address and return boolean value.
-    ip_check = '''(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)'''
-    if re.search(ip_check, data):
-        return True
-    return False
+    ip_check = re.compile(r'''
+            ^
+            (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.  # First octet
+            (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.  # Second octet
+            (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.  # Third octet
+            (25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)    # Fourth octet
+            $
+        ''', re.VERBOSE)
+    return bool(re.match(ip_check, data))
 
 
-def internal_ipcheck(data):
+def internal_ipv4_check(data):
     # Must submit exact IP not string to check
-    ip_check = '''(127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|192\.168\.[0-9]{1,3}\.[0-9]{1,3}|10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|172\.1[6-9]\.[0-9]{1,3}\.[0-9]{1,3}|172\.2[0-9]\.[0-9]{1,3}\.[0-9]{1,3}|172\.3[0-1]\.[0-9]{1,3}\.[0-9]{1,3})'''
-    check = re.findall(ip_check, data)
-    return check if check else False
+    internal_ip_check = re.compile(r'''
+            ^
+            (127\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|            # Loopback
+            192\.168\.[0-9]{1,3}\.[0-9]{1,3}|                    # Private-Use Networks
+            10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|              # Private-Use Networks
+            172\.(1[6-9]|2[0-9]|3[0-1])\.[0-9]{1,3}\.[0-9]{1,3}) # Private-Use Networks
+            $
+        ''', re.VERBOSE)
+    return bool(re.match(internal_ip_check, data))
 
 
 ################################
