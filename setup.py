@@ -23,7 +23,7 @@ EXTRAS_REQUIRE = {
 
 setup(
     name="taser",
-    version="0.5.0",
+    version="0.5.1",
     author="m8sec",
     description="Security resource and abstraction library",
     long_description=README.read_text(encoding="utf-8"),
