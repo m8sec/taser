@@ -675,9 +675,9 @@ def describe_permission_catalog() -> List[Dict[str, object]]:
     return list(ETW_PERMISSION_DEFINITIONS)
 
 
-def _run_command(command: List[str]) -> subprocess.CompletedProcess:
+def _run_command(command: List[str], timeout: Optional[float] = None) -> subprocess.CompletedProcess:
     try:
-        return subprocess.run(command, capture_output=True, text=True, check=True)
+        return subprocess.run(command, capture_output=True, text=True, check=True, timeout=timeout)
     except subprocess.CalledProcessError as exc:
         stdout = (exc.stdout or "").strip()
         stderr = (exc.stderr or "").strip()
@@ -688,6 +688,8 @@ def _run_command(command: List[str]) -> subprocess.CompletedProcess:
             details.append("stderr: {}".format(stderr))
         suffix = " ({})".format(" | ".join(details)) if details else ""
         raise OSError("Command failed: {}{}".format(" ".join(command), suffix)) from exc
+    except subprocess.TimeoutExpired as exc:
+        raise OSError("Command timed out after {} second(s): {}".format(timeout, " ".join(command))) from exc
 
 
 def _guid_from_string(value: str) -> GUID:
@@ -780,7 +782,7 @@ def _extract_provider_identity(provider_entry: str) -> str:
     raise ValueError("Unable to resolve provider entry: {}".format(provider_entry))
 
 
-def _finalize_session_provider(provider: Optional[Dict[str, str]]) -> Optional[Dict[str, str]]:
+def _finalize_session_provider(provider: Optional[Dict[str, str]], resolve_names: bool = True) -> Optional[Dict[str, str]]:
     if not provider:
         return None
     name = str(provider.get("name", "")).strip()
@@ -798,7 +800,7 @@ def _finalize_session_provider(provider: Optional[Dict[str, str]]) -> Optional[D
         if raw and not _GUID_RE.match(raw):
             name = raw
 
-    if name and not guid:
+    if resolve_names and name and not guid:
         exact = [item for item in search_providers_by_name(name) if str(item.get("name", "")).lower() == name.lower()]
         if len(exact) == 1 and exact[0].get("guid"):
             guid = str(exact[0]["guid"])
@@ -813,7 +815,7 @@ def _finalize_session_provider(provider: Optional[Dict[str, str]]) -> Optional[D
     }
 
 
-def _parse_session_query_output(session_name: str, output: str) -> Dict[str, object]:
+def _parse_session_query_output(session_name: str, output: str, resolve_names: bool = True) -> Dict[str, object]:
     details = {}
     providers = []
     in_provider_block = False
@@ -825,7 +827,7 @@ def _parse_session_query_output(session_name: str, output: str) -> Dict[str, obj
         if not line or line.startswith("-") or lowered.startswith("the command completed successfully"):
             continue
         if lowered in ("provider:", "providers:"):
-            finalized = _finalize_session_provider(current_provider)
+            finalized = _finalize_session_provider(current_provider, resolve_names=resolve_names)
             if finalized:
                 providers.append(finalized)
             current_provider = {"name": "", "guid": "", "raw": ""}
@@ -838,7 +840,7 @@ def _parse_session_query_output(session_name: str, output: str) -> Dict[str, obj
             key_lower = key.lower()
             if in_provider_block:
                 if not is_indented and key_lower not in ("provider", "providers"):
-                    finalized = _finalize_session_provider(current_provider)
+                    finalized = _finalize_session_provider(current_provider, resolve_names=resolve_names)
                     if finalized:
                         providers.append(finalized)
                     current_provider = None
@@ -853,7 +855,7 @@ def _parse_session_query_output(session_name: str, output: str) -> Dict[str, obj
                         current_provider["guid"] = value
                         continue
                     if key_lower in ("provider", "providers"):
-                        finalized = _finalize_session_provider(current_provider)
+                        finalized = _finalize_session_provider(current_provider, resolve_names=resolve_names)
                         if finalized:
                             providers.append(finalized)
                         current_provider = {"name": value, "guid": "", "raw": value}
@@ -872,7 +874,7 @@ def _parse_session_query_output(session_name: str, output: str) -> Dict[str, obj
             else:
                 current_provider["raw"] = "{} {}".format(current_provider.get("raw", "").strip(), line).strip()
 
-    finalized = _finalize_session_provider(current_provider)
+    finalized = _finalize_session_provider(current_provider, resolve_names=resolve_names)
     if finalized:
         providers.append(finalized)
 
@@ -885,7 +887,8 @@ def _parse_session_query_output(session_name: str, output: str) -> Dict[str, obj
                     "name": "" if _GUID_RE.match(provider_name) else provider_name,
                     "guid": provider_guid or provider_name,
                     "raw": provider_name or provider_guid,
-                }
+                },
+                resolve_names=resolve_names,
             )
         )
 

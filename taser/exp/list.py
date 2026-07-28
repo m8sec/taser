@@ -11,11 +11,14 @@ import argparse
 import json
 import os
 import sys
+import textwrap
 from pathlib import Path
 from typing import Dict, List
 
 from taser import BANNER
 
+SCRIPT_CATEGORIES = {"web", "dns", "net", "fs", "win", "misc", "prox", "radmin"}
+DESCRIPTION_WRAP_WIDTH = 175
 
 METADATA_KEYS = {
     "description": "description",
@@ -77,20 +80,43 @@ def _extract_metadata(path: Path) -> Dict[str, str]:
     return metadata
 
 
-def discover_examples() -> List[Dict[str, str]]:
-    exp_dir = Path(__file__).resolve().parent
-    examples = []
+def infer_category(path: Path) -> str:
+    for part in path.parts:
+        if part in SCRIPT_CATEGORIES:
+            return part
+    return "misc"
 
-    for path in sorted(exp_dir.glob("*.py"), key=lambda item: item.stem.lower()):
-        if path.name.startswith("_") or path.name in ("__init__.py", "list.py"):
+
+def build_module_name(path: Path, package_root: Path) -> str:
+    relative = path.relative_to(package_root.parent).with_suffix("")
+    return ".".join(relative.parts)
+
+
+def discover_examples() -> List[Dict[str, str]]:
+    package_root = Path(__file__).resolve().parents[1]
+    search_root = package_root / "exp"
+    examples = []
+    cwd = Path.cwd().resolve()
+
+    for path in sorted(search_root.rglob("*.py"), key=lambda item: str(item).lower()):
+        if path.name.startswith("_") or path.name == "__init__.py":
+            continue
+        if path.parent == search_root:
             continue
         metadata = _extract_metadata(path)
         summary = metadata.get("description") or metadata.get("info") or "No description found."
+        module_name = build_module_name(path, package_root)
+        try:
+            display_path = os.path.relpath(path, cwd)
+        except ValueError:
+            display_path = str(path)
         examples.append(
             {
                 "name": path.stem,
-                "module": "taser.exp.{}".format(path.stem),
-                "path": os.path.relpath(path, Path.cwd()),
+                "category": infer_category(path),
+                "module": module_name,
+                "invoke": "python -m {}".format(module_name),
+                "path": display_path,
                 "description": summary,
                 "info": metadata.get("info", ""),
             }
@@ -102,12 +128,33 @@ def discover_examples() -> List[Dict[str, str]]:
 def render_examples(examples: List[Dict[str, str]]) -> str:
     if not examples:
         return "No example scripts found.\n"
-    width = max(len(example["name"]) for example in examples)
+    name_width = max(len(example["name"]) for example in examples)
+    exp_width = max(len(example["invoke"]) for example in examples)
     lines = []
     for example in examples:
-        lines.append("{:<{}} - {}".format(example["name"], width, example["description"]))
+        prefix = "  + {:<{}}  {:<{}}  - ".format(
+            example["name"],
+            name_width,
+            example["invoke"],
+            exp_width,
+        )
+        wrapped_description = textwrap.wrap(
+            example["description"],
+            width=DESCRIPTION_WRAP_WIDTH,
+            initial_indent=prefix,
+            subsequent_indent=" " * len(prefix),
+        ) or [prefix.rstrip()]
+        lines.extend(wrapped_description)
         if example.get("info"):
-            lines.append("{}   {}".format(" " * width, example["info"]))
+            info_indent = " " * len(prefix)
+            lines.extend(
+                textwrap.wrap(
+                    example["info"],
+                    width=DESCRIPTION_WRAP_WIDTH,
+                    initial_indent=info_indent,
+                    subsequent_indent=info_indent,
+                )
+            )
     return "\n".join(lines) + "\n"
 
 

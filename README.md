@@ -9,8 +9,6 @@
 
 TASER *(Testing and Security Resource)* is an abstraction library used to simplify the process of creating offensive security tooling. The various protocols and classes help streamline development of custom tooling during engagements.
 
-The canonical packaged scripts live under `taser.exp` and can be run with `python -m taser.exp.<module>`. The `examples/` directory contains thin wrappers for compatibility and discoverability.
-
 > ⚠ Warning: Taser is a working library and breaking changes may be made.
 
 
