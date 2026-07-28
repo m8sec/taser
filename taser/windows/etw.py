@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import ctypes
+import getpass
 import json
 import os
 import platform
@@ -508,6 +509,50 @@ def _kernel_provider_hint(name: str) -> bool:
     return "kernel" in lowered or lowered.startswith("microsoft-windows-kernel")
 
 
+def _current_user_names() -> List[str]:
+    names = []
+    username = os.environ.get("USERNAME") or getpass.getuser()
+    userdomain = os.environ.get("USERDOMAIN", "")
+    if username:
+        names.append(username.lower())
+    if username and userdomain:
+        names.append("{}\\{}".format(userdomain, username).lower())
+    return names
+
+
+def _edit_exposure_principals(aces: List[Dict[str, object]]) -> List[str]:
+    current_users = set(_current_user_names())
+    principals = []
+    for ace in aces:
+        if str(ace.get("type", "")).lower() != "allow":
+            continue
+        account = str(ace.get("account", "")).lower()
+        sid = str(ace.get("sid", "")).upper()
+        permissions = ace.get("permissions", [])
+        if "TRACELOG_GUID_ENABLE" not in permissions:
+            continue
+        if account == "everyone" or sid == "WD":
+            principals.append("Everyone")
+            continue
+        if account == "authenticated users" or sid == "AU":
+            principals.append("Authenticated Users")
+            continue
+        if account in current_users:
+            principals.append("Current User ({})".format(ace.get("account")))
+            continue
+        if "\\" in account and account.rsplit("\\", 1)[-1] in current_users:
+            principals.append("Current User ({})".format(ace.get("account")))
+    return list(dict.fromkeys(principals))
+
+
+def _color_allowed_to_edit(value: bool, colorize: bool) -> str:
+    line = "Allowed To Edit: {}".format(str(value).lower())
+    if not colorize:
+        return line
+    color = "31" if value else "32"
+    return "\033[1;{}m{}\033[0m".format(color, line)
+
+
 def enumerate_etw_providers() -> List[Dict[str, object]]:
     if not is_windows():
         raise OSError("ETW provider enumeration is only supported on Windows")
@@ -547,6 +592,7 @@ def build_provider_report(provider: Dict[str, object], security_descriptors: Opt
     security_descriptor = security_descriptors.get(guid)
     sddl = _convert_sd_to_sddl(security_descriptor) if security_descriptor else None
     aces = _extract_aces_from_sddl(sddl) if sddl else _default_aces()
+    edit_exposure_principals = _edit_exposure_principals(aces)
 
     return {
         "guid": guid,
@@ -556,6 +602,9 @@ def build_provider_report(provider: Dict[str, object], security_descriptors: Opt
         "security_permissions_registered": registered,
         "security_descriptor_sddl": sddl,
         "permissions": aces,
+        "allowed_to_edit_provider": bool(edit_exposure_principals),
+        "edit_exposure_principals": edit_exposure_principals,
+        "everyone_may_edit_provider": "Everyone" in edit_exposure_principals,
         "kernel_provider_note": _kernel_provider_hint(str(name)),
     }
 
@@ -1179,12 +1228,15 @@ def render_session_providers(session: Dict[str, object]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def render_text_report(providers: List[Dict[str, object]], show_sddl: bool = False) -> str:
+def render_text_report(providers: List[Dict[str, object]], show_sddl: bool = False, colorize: bool = False) -> str:
     lines = []
     for provider in providers:
         lines.append("GUID: {}".format(provider.get("guid") or "<unresolved>"))
         lines.append("Name: {}".format(provider.get("name") or "<unknown>"))
+        lines.append(_color_allowed_to_edit(bool(provider.get("allowed_to_edit_provider")), colorize))
         lines.append("Security Permissions Registered: {}".format(str(provider.get("security_permissions_registered")).lower()))
+        if provider.get("allowed_to_edit_provider"):
+            lines.append("Allowed To Edit Principals: {}".format(", ".join(provider.get("edit_exposure_principals", []))))
         if provider.get("kernel_provider_note"):
             lines.append("Kernel Provider Note: permissions shown reflect the user-mode ETW interface and may not represent driver-enforced access.")
         if show_sddl and provider.get("security_descriptor_sddl"):
@@ -1216,6 +1268,9 @@ def write_csv_report(path: str, providers: List[Dict[str, object]]) -> None:
                 "sid",
                 "access_mask_hex",
                 "permissions",
+                "allowed_to_edit_provider",
+                "edit_exposure_principals",
+                "everyone_may_edit_provider",
                 "source",
                 "kernel_provider_note",
             ]
@@ -1232,6 +1287,9 @@ def write_csv_report(path: str, providers: List[Dict[str, object]]) -> None:
                         ace.get("sid"),
                         ace.get("access_mask_hex"),
                         ";".join(ace.get("permissions", [])),
+                        provider.get("allowed_to_edit_provider"),
+                        ";".join(provider.get("edit_exposure_principals", [])),
+                        provider.get("everyone_may_edit_provider"),
                         provider.get("source"),
                         provider.get("kernel_provider_note"),
                     ]

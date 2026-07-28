@@ -192,7 +192,7 @@ def output_reports(args, reports):
     if fmt == "json":
         sys.stdout.write(json.dumps(reports, indent=2) + "\n")
     else:
-        sys.stdout.write(render_text_report(reports, show_sddl=args.show_sddl))
+        sys.stdout.write(render_text_report(reports, show_sddl=args.show_sddl, colorize=True))
 
 
 def cli(argv=None):
