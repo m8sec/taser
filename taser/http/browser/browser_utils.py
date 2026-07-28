@@ -16,7 +16,7 @@ def build_requests_object(driver, elapsed_time=False, screenshot=False):
         host = URLParser.extract_subdomain(url)
         port = parsed.port if getattr(parsed, 'port', '') else (443 if parsed.proto == 'https' else 80)
         page_hash = sha1((parsed.path or '/').encode('utf-8')).hexdigest()[:8]
-        screenshot_name = f"{parsed.proto}_{host}_{port}_{page_hash}"
+        screenshot_name = f"{parsed.proto}_{host}_{port}_{page_hash}.png"
         fname = file_collision_check(path.join(screenshot, screenshot_name), ext='png')
         driver.save_screenshot(fname)
 
